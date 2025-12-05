@@ -205,7 +205,7 @@ class Application(TimeStampedModel):
             total += self.education_scoring.total_score
         
         # 2. امتیاز سوابق پژوهشی (فقط برای دکتری)
-        if self.round.type == 'PHD':
+        if self.round.type in ['PHD_TALENT', 'PHD_EXAM']:
             # مقالات پژوهشی
             total += sum([article.score for article in self.research_articles.all()])
             
@@ -226,7 +226,7 @@ class Application(TimeStampedModel):
                 total += self.masters_thesis.score
         
         # 3. امتیاز مصاحبه (فقط برای دکتری)
-        if self.round.type == 'PHD' and hasattr(self, 'interview'):
+        if self.round.type in ['PHD_TALENT', 'PHD_EXAM'] and hasattr(self, 'interview'):
             total += self.interview.total_interview_score
         
         # ذخیره امتیاز نهایی

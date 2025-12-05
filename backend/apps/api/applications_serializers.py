@@ -71,9 +71,9 @@ class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """نمایش داده‌ها بر اساس نوع فراخوان"""
         # چک کردن نوع فراخوان
-        if instance.application.round.type == 'MA':
+        if instance.application.round.type == 'MA_TALENT':
             serializer = MAEducationRecordSerializer(instance, context=self.context)
-        else:  # PHD
+        else:  # PHD_TALENT or PHD_EXAM
             serializer = PhDEducationRecordSerializer(instance, context=self.context)
         
         return serializer.data

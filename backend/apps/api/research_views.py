@@ -90,7 +90,7 @@ def create_research_record(request, application_id):
     )
     
     # چک کردن اینکه فقط دکتری می‌تواند سوابق پژوهشی ثبت کند
-    if application.round.type != 'PHD':
+    if application.round.type not in ['PHD_TALENT', 'PHD_EXAM']:
         return Response(
             {'error': 'فقط داوطلبان دکتری می‌توانند سوابق پژوهشی ثبت کنند'},
             status=status.HTTP_403_FORBIDDEN
