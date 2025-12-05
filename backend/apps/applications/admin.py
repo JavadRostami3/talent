@@ -1,13 +1,14 @@
 from django.contrib import admin
+from django.utils import timezone
 from .models import (
     Application, ApplicationChoice, ApplicationEducationRecord, 
-    ScientificRecord, RegistrationPayment,
-    # مدل‌های دکتری
+    RegistrationPayment,
+    # مدل‌های سوابق پژوهشی
     ResearchArticle, Patent, FestivalAward, ConferenceArticle, 
     Book, MastersThesis, Interview,
-    # مدل‌های المپیاد و زبان
+    # مدل‌های المپیاد و زبان (فقط برای ذخیره مدارک)
     OlympiadRecord, LanguageCertificate,
-    # امتیازدهی سوابق تحصیلی
+    # امتیازدهی سوابق تحصیلی (دستی)
     EducationScoring
 )
 
@@ -131,27 +132,8 @@ class ApplicationEducationRecordAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(ScientificRecord)
-class ScientificRecordAdmin(admin.ModelAdmin):
-    list_display = [
-        'application',
-        'type',
-        'title',
-        'journal_or_event',
-        'year',
-        'score'
-    ]
-    list_filter = ['type', 'year']
-    search_fields = [
-        'application__tracking_code',
-        'title',
-        'journal_or_event'
-    ]
-    raw_id_fields = ['application']
-
-
 # ============================================
-# Admin برای مدل‌های دکتری
+# Admin برای مدل‌های سوابق پژوهشی
 # ============================================
 
 @admin.register(ResearchArticle)

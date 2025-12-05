@@ -189,6 +189,52 @@ class Application(TimeStampedModel):
                     self.tracking_code = code
                     break
         super().save(*args, **kwargs)
+    
+    def calculate_final_score(self):
+        """
+        محاسبه امتیاز نهایی داوطلب
+        
+        منطق: امتیاز نهایی = امتیاز سوابق تحصیلی (EducationScoring) + سوابق پژوهشی + مصاحبه
+        
+        نکته مهم: امتیاز سوابق تحصیلی فقط از EducationScoring خوانده می‌شود (دستی)
+        """
+        total = 0
+        
+        # 1. امتیاز سوابق تحصیلی (از EducationScoring - دستی توسط کارشناس)
+        if hasattr(self, 'education_scoring'):
+            total += self.education_scoring.total_score
+        
+        # 2. امتیاز سوابق پژوهشی (فقط برای دکتری)
+        if self.round.type == 'PHD':
+            # مقالات پژوهشی
+            total += sum([article.score for article in self.research_articles.all()])
+            
+            # اختراعات
+            total += sum([patent.score for patent in self.patents.all()])
+            
+            # جوایز جشنواره
+            total += sum([award.score for award in self.festival_awards.all()])
+            
+            # مقالات کنفرانس
+            total += sum([conf.score for conf in self.conference_articles.all()])
+            
+            # کتاب‌ها
+            total += sum([book.score for book in self.books.all()])
+            
+            # پایان‌نامه ارشد
+            if hasattr(self, 'masters_thesis'):
+                total += self.masters_thesis.score
+        
+        # 3. امتیاز مصاحبه (فقط برای دکتری)
+        if self.round.type == 'PHD' and hasattr(self, 'interview'):
+            total += self.interview.total_interview_score
+        
+        # ذخیره امتیاز نهایی
+        self.total_score = total
+        self.score_calculated_at = timezone.now()
+        self.save(update_fields=['total_score', 'score_calculated_at'])
+        
+        return self.total_score
 
 
 class ApplicationChoice(TimeStampedModel):
@@ -354,56 +400,7 @@ class ApplicationEducationRecord(TimeStampedModel):
         help_text="مثال: رتبه 2 از 30 درصد (دهمه اصلی) - فقط برای ارشد"
     )
     
-    # ============================================
-    # امتیازدهی توسط کارشناس (برای دکتری)
-    # ============================================
-    
-    # امتیاز معدل (بر اساس جدول)
-    gpa_score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز معدل",
-        help_text="بر اساس جدول امتیازدهی"
-    )
-    
-    # امتیاز دانشگاه (بر اساس ضریب)
-    university_score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز دانشگاه",
-        help_text="بر اساس ضریب دانشگاه"
-    )
-    
-    # امتیاز طول مدت دوره
-    duration_score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز طول مدت دوره",
-        help_text="کارشناسی: تا 3 امتیاز | ارشد: تا 3 امتیاز"
-    )
-    
-    # امتیاز کل این مقطع تحصیلی
-    total_score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز کل",
-        help_text="جمع امتیازهای این مقطع (معدل + دانشگاه + طول مدت)"
-    )
-    
-    # بررسی توسط کارشناس
-    reviewed_by = models.ForeignKey(
-        User,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='reviewed_education_records',
-        verbose_name="بررسی‌کننده"
-    )
-    reviewed_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="تاریخ بررسی"
-    )
-    review_comment = models.TextField(
-        blank=True,
-        verbose_name="نظر کارشناس"
-    )
+    # توضیح: امتیازدهی این رکورد در مدل EducationScoring انجام می‌شود
     
     class Meta:
         verbose_name = "سابقه تحصیلی"
@@ -526,58 +523,9 @@ class EducationScoring(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class ScientificRecord(TimeStampedModel):
-    """
-    سوابق علمی داوطلب - برای استعداد درخشان ارشد (ساده)
-    """
-    class RecordType(models.TextChoices):
-        ARTICLE = "ARTICLE", "مقاله"
-        BOOK = "BOOK", "کتاب"
-        CONFERENCE = "CONFERENCE", "مقاله کنفرانسی"
-        PATENT = "PATENT", "اختراع"
-        OTHER = "OTHER", "سایر"
-    
-    application = models.ForeignKey(
-        Application,
-        on_delete=models.CASCADE,
-        related_name='scientific_records',
-        verbose_name="درخواست"
-    )
-    type = models.CharField(
-        max_length=20,
-        choices=RecordType.choices,
-        verbose_name="نوع"
-    )
-    title = models.CharField(max_length=255, verbose_name="عنوان")
-    journal_or_event = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="ژورنال/رویداد"
-    )
-    year = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        verbose_name="سال"
-    )
-    score = models.FloatField(default=0, verbose_name="امتیاز")
-    file = models.FileField(
-        upload_to='scientific_records/',
-        null=True,
-        blank=True,
-        verbose_name="فایل"
-    )
-    
-    class Meta:
-        verbose_name = "سابقه علمی"
-        verbose_name_plural = "سوابق علمی"
-        ordering = ['application', '-year']
-    
-    def __str__(self):
-        return f"{self.get_type_display()}: {self.title}"
-
-
 # ============================================
-# مدل‌های سوابق پژوهشی برای دکتری
+# مدل‌های سوابق پژوهشی (برای هر دو ارشد و دکتری)
+# این مدل‌ها جایگزین ScientificRecord شده‌اند
 # ============================================
 
 class ResearchArticle(TimeStampedModel):
@@ -1172,7 +1120,9 @@ class RegistrationPayment(TimeStampedModel):
 class OlympiadRecord(TimeStampedModel):
     """
     برگزیدگان المپیادهای علمی
-    سقف امتیاز: 5
+    
+    نکته مهم: این مدل فقط برای ذخیره مدارک المپیاد است.
+    امتیازدهی نهایی توسط کارشناس در مدل EducationScoring انجام می‌شود.
     """
     class OlympiadType(models.TextChoices):
         PHYSICS = "PHYSICS", "المپیاد فیزیک"
@@ -1233,13 +1183,7 @@ class OlympiadRecord(TimeStampedModel):
         verbose_name="فایل مدرک المپیاد"
     )
     
-    # امتیازدهی
-    score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز",
-        help_text="حداکثر 5 امتیاز"
-    )
-    
+    # بررسی مدرک
     reviewed_by = models.ForeignKey(
         User,
         null=True,
@@ -1274,7 +1218,9 @@ class OlympiadRecord(TimeStampedModel):
 class LanguageCertificate(TimeStampedModel):
     """
     مدرک زبان معتبر
-    سقف امتیاز: 8
+    
+    نکته مهم: این مدل فقط برای ذخیره مدارک زبان است.
+    امتیازدهی نهایی توسط کارشناس در مدل EducationScoring انجام می‌شود.
     """
     class LanguageType(models.TextChoices):
         ENGLISH = "ENGLISH", "انگلیسی"
@@ -1354,13 +1300,7 @@ class LanguageCertificate(TimeStampedModel):
         verbose_name="فایل مدرک زبان"
     )
     
-    # امتیازدهی
-    score = models.FloatField(
-        default=0,
-        verbose_name="امتیاز",
-        help_text="حداکثر 8 امتیاز بر اساس نمره آزمون"
-    )
-    
+    # بررسی مدرک
     reviewed_by = models.ForeignKey(
         User,
         null=True,

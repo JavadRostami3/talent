@@ -145,9 +145,22 @@ class UserRegistrationSerializer(serializers.Serializer):
     round_type = serializers.CharField(max_length=20, required=True)
     
     def validate_national_id(self, value):
-        """Validate national ID format"""
-        if not value.isdigit() or len(value) != 10:
-            raise serializers.ValidationError("کد ملی باید 10 رقم باشد")
+        """Validate national ID format and checksum"""
+        from apps.api.validators import validate_national_id
+        
+        # چک کردن فرمت و الگوریتم کد ملی
+        if not validate_national_id(value):
+            raise serializers.ValidationError("کد ملی نامعتبر است")
+        
+        return value
+    
+    def validate_round_type(self, value):
+        """Validate that an active round exists for this type"""
+        from apps.admissions.models import AdmissionRound
+        
+        if not AdmissionRound.objects.filter(type=value, is_active=True).exists():
+            raise serializers.ValidationError("فراخوان فعالی برای این نوع یافت نشد")
+        
         return value
 
 
