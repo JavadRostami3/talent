@@ -4,14 +4,14 @@ Serializers for applications app
 from rest_framework import serializers
 from apps.applications.models import (
     Application, ApplicationChoice, ApplicationEducationRecord,
-    ScientificRecord, RegistrationPayment
+    RegistrationPayment
 )
 from apps.api.admissions_serializers import ProgramListSerializer
 from apps.api.core_serializers import UniversitySerializer
 
 
-class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
-    """Serializer for ApplicationEducationRecord model"""
+class BaseEducationRecordSerializer(serializers.ModelSerializer):
+    """Base Serializer برای سوابق تحصیلی"""
     university = UniversitySerializer(read_only=True)
     university_id = serializers.IntegerField(write_only=True)
     degree_level_display = serializers.CharField(source='get_degree_level_display', read_only=True)
@@ -21,24 +21,62 @@ class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
         model = ApplicationEducationRecord
         fields = [
             'id', 'application', 'degree_level', 'degree_level_display',
-            'university', 'university_id', 'field_of_study', 'status', 'status_display',
-            'total_units_passed', 'semester_count', 'gpa', 'class_size',
-            'rank_status', 'start_date', 'end_date'
+            'university', 'university_id', 'field_of_study', 
+            'status', 'status_display', 'gpa',
+            'start_month', 'start_year', 'graduation_month', 'graduation_year',
+            'created_at', 'updated_at'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
-class ScientificRecordSerializer(serializers.ModelSerializer):
-    """Serializer for ScientificRecord model"""
-    type_display = serializers.CharField(source='get_type_display', read_only=True)
+class MAEducationRecordSerializer(BaseEducationRecordSerializer):
+    """
+    Serializer برای سوابق تحصیلی ارشد
+    فقط فیلدهای ضروری برای ارشد را نشان می‌دهد
+    """
+    class Meta(BaseEducationRecordSerializer.Meta):
+        fields = BaseEducationRecordSerializer.Meta.fields + [
+            'total_units_passed',  # تا پایان ترم 6
+            'semester_count',
+            'class_size',
+            'rank_status',
+        ]
+
+
+class PhDEducationRecordSerializer(BaseEducationRecordSerializer):
+    """
+    Serializer برای سوابق تحصیلی دکتری
+    شامل فیلدهای کارشناسی و ارشد
+    """
+    class Meta(BaseEducationRecordSerializer.Meta):
+        # دکتری همان فیلدهای پایه را دارد
+        # امتیازدهی در EducationScoring انجام می‌شود
+        pass
+
+
+class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
+    """
+    Serializer پویا که بر اساس نوع فراخوان، فیلدهای مناسب را نشان می‌دهد
+    """
+    university = UniversitySerializer(read_only=True)
+    university_id = serializers.IntegerField(write_only=True, required=False)
+    degree_level_display = serializers.CharField(source='get_degree_level_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
     
     class Meta:
-        model = ScientificRecord
-        fields = [
-            'id', 'application', 'type', 'type_display', 'title',
-            'journal_or_event', 'year', 'score', 'file'
-        ]
-        read_only_fields = ['id', 'score']
+        model = ApplicationEducationRecord
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def to_representation(self, instance):
+        """نمایش داده‌ها بر اساس نوع فراخوان"""
+        # چک کردن نوع فراخوان
+        if instance.application.round.type == 'MA':
+            serializer = MAEducationRecordSerializer(instance, context=self.context)
+        else:  # PHD
+            serializer = PhDEducationRecordSerializer(instance, context=self.context)
+        
+        return serializer.data
 
 
 class ApplicationChoiceSerializer(serializers.ModelSerializer):
@@ -67,7 +105,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
     
     choices = ApplicationChoiceSerializer(many=True, read_only=True)
     education_records = ApplicationEducationRecordSerializer(many=True, read_only=True)
-    scientific_records = ScientificRecordSerializer(many=True, read_only=True)
     
     class Meta:
         model = Application
@@ -76,11 +113,12 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'round', 'round_title', 'round_type', 'tracking_code',
             'status', 'status_display', 'university_of_study',
             'university_weight', 'rank_percentile_group', 'total_score',
-            'score_calculated_at', 'final_review_status',
-            'final_reviewed_by', 'final_reviewed_at',
+            'score_calculated_at',
+            'university_review_status', 'university_reviewed_by', 'university_reviewed_at',
+            'faculty_review_completed', 'faculty_reviewed_by', 'faculty_reviewed_at',
             'admission_overall_status', 'admission_result_published_at',
             'created_at', 'updated_at',
-            'choices', 'education_records', 'scientific_records'
+            'choices', 'education_records'
         ]
         read_only_fields = [
             'id', 'tracking_code', 'total_score', 'score_calculated_at',

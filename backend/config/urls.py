@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/accounts/', include('apps.api.accounts_urls')),
     path('api/content/', include('apps.api.content_urls')),
     path('api/core/', include('apps.api.core_urls')),
+    path('api/', include('apps.api.research_urls')),  # Unified Research Records API
     # path('api/public/', include('apps.api.public_urls')),
     # path('api/applicant/', include('apps.api.applicant_urls')),
     # path('api/admin/', include('apps.api.admin_urls')),
