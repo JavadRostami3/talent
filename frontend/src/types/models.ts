@@ -194,6 +194,7 @@ export interface Application {
 
 /**
  * Application Choice (انتخاب رشته)
+ * این interface نحوه انتخاب رشته توسط متقاضی و نتیجه پذیرش را مدیریت می‌کند
  */
 export interface ApplicationChoice {
   id: number;
@@ -203,6 +204,10 @@ export interface ApplicationChoice {
   faculty_name?: string; // populated from backend
   department_name?: string; // populated from backend
   priority: number;
+  // فیلدهای جدید مربوط به نتیجه پذیرش (از Backend)
+  admission_status?: 'PENDING' | 'ACCEPTED' | 'REJECTED'; // وضعیت پذیرش نهایی
+  admission_priority_result?: number; // اولویت نهایی پس از پذیرش
+  admission_note?: string; // یادداشت مربوط به پذیرش
   created_at: string;
 }
 
@@ -234,7 +239,19 @@ export interface EducationRecord {
 }
 
 /**
- * Research Record (سوابق پژوهشی - Unified)
+ * Research Record (سوابق پژوهشی - Unified Interface)
+ * 
+ * ⚠️ توجه: این interface یک لایه انتزاعی (abstraction layer) برای چندین مدل جداگانه در بک‌اند است.
+ * در بک‌اند، هر نوع سابقه پژوهشی یک مدل مجزا دارد:
+ * - Article (مقاله)
+ * - Book (کتاب)
+ * - Patent (اختراع/ثبت اختراع)
+ * - Conference (کنفرانس)
+ * - FestivalAward (جایزه جشنواره)
+ * - MastersThesis (پایان‌نامه کارشناسی ارشد)
+ * 
+ * این interface برای راحتی کار در فرانت‌اند، تمام فیلدهای ممکن از همه مدل‌ها را دارد.
+ * بسته به مقدار فیلد `type`، فقط زیرمجموعه‌ای از فیلدها معتبر هستند.
  */
 export interface ResearchRecord {
   id: number;
