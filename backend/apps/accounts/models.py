@@ -1,5 +1,32 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+
+
+class UserManager(BaseUserManager):
+    """
+    User Manager برای مدل User که از national_id استفاده می‌کند
+    """
+    def create_user(self, national_id, email=None, password=None, **extra_fields):
+        if not national_id:
+            raise ValueError('کد ملی باید وارد شود')
+        
+        email = self.normalize_email(email) if email else ''
+        user = self.model(national_id=national_id, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, national_id, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', 'SUPERADMIN')
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('سوپریوزر باید is_staff=True داشته باشد')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('سوپریوزر باید is_superuser=True داشته باشد')
+        
+        return self.create_user(national_id, email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -7,6 +34,8 @@ class User(AbstractUser):
     مدل سفارشی کاربر با استفاده از کد ملی به جای username
     """
     username = None
+    
+    objects = UserManager()
     
     class Roles(models.TextChoices):
         APPLICANT = "APPLICANT", "داوطلب"

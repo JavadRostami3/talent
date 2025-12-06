@@ -149,9 +149,15 @@ class UserRegistrationSerializer(serializers.Serializer):
         from apps.api.validators import validate_national_id
         
         # چک کردن فرمت و الگوریتم کد ملی
-        if not validate_national_id(value):
-            raise serializers.ValidationError("کد ملی نامعتبر است")
+        validate_national_id(value)
+        return value
+    
+    def validate_mobile(self, value):
+        """Validate mobile number format"""
+        from apps.api.validators import validate_mobile_number
         
+        # چک کردن فرمت شماره موبایل
+        validate_mobile_number(value)
         return value
     
     def validate_round_type(self, value):

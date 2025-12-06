@@ -54,7 +54,9 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         
         # اگر کاربر Admin نیست، فقط اطلاعیه‌های منتشر شده را نشان بده
-        if not self.request.user.is_authenticated or self.request.user.role not in ['ADMIN', 'SUPERADMIN']:
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(is_published=True, published_at__lte=timezone.now())
+        elif not hasattr(self.request.user, 'role') or self.request.user.role not in ['UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SUPERADMIN']:
             queryset = queryset.filter(is_published=True, published_at__lte=timezone.now())
         
         return queryset
@@ -104,7 +106,8 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public(self, request):
         """لیست اطلاعیه‌های عمومی منتشر شده"""
-        queryset = self.get_queryset().filter(
+        # استفاده مستقیم از queryset اصلی برای جلوگیری از مشکل در get_queryset
+        queryset = Announcement.objects.filter(
             is_published=True,
             published_at__lte=timezone.now()
         )
@@ -113,6 +116,11 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         category = request.query_params.get('category', None)
         if category:
             queryset = queryset.filter(category=category)
+        
+        # اعمال ordering
+        ordering = request.query_params.get('ordering', '-published_at')
+        if ordering:
+            queryset = queryset.order_by(ordering)
         
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -128,7 +136,8 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         limit = int(request.query_params.get('limit', 5))
         category = request.query_params.get('category', None)
         
-        queryset = self.get_queryset().filter(
+        # استفاده مستقیم از queryset اصلی
+        queryset = Announcement.objects.filter(
             is_published=True,
             published_at__lte=timezone.now()
         )
@@ -136,7 +145,7 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         if category:
             queryset = queryset.filter(category=category)
         
-        queryset = queryset[:limit]
+        queryset = queryset.order_by('-published_at')[:limit]
         serializer = AnnouncementPublicSerializer(queryset, many=True)
         
         return Response(serializer.data)
@@ -159,7 +168,9 @@ class StaticPageViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         
         # اگر کاربر Admin نیست، فقط صفحات منتشر شده را نشان بده
-        if not self.request.user.is_authenticated or self.request.user.role not in ['ADMIN', 'SUPERADMIN']:
+        if not self.request.user.is_authenticated:
+            queryset = queryset.filter(is_published=True)
+        elif not hasattr(self.request.user, 'role') or self.request.user.role not in ['UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SUPERADMIN']:
             queryset = queryset.filter(is_published=True)
         
         return queryset

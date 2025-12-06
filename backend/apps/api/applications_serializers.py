@@ -95,8 +95,130 @@ class ApplicationChoiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'admission_status', 'admission_priority_result', 'admission_note']
 
 
-class ApplicationSerializer(serializers.ModelSerializer):
-    """Full serializer for Application model"""
+class ApplicationListSerializer(serializers.ModelSerializer):
+    """
+    Serializer برای نمایش لیست applications با اطلاعات کامل برای جدول ادمین
+    """
+    # اطلاعات داوطلب
+    applicant = serializers.SerializerMethodField()
+    
+    # دانشکده/گروه آموزشی
+    faculty_department = serializers.SerializerMethodField()
+    
+    # رشته انتخابی (اولویت اول)
+    selected_program = serializers.SerializerMethodField()
+    
+    # دانشگاه محل تحصیل + ضریب
+    university_info = serializers.SerializerMethodField()
+    
+    # وضعیت رتبه
+    rank_status = serializers.SerializerMethodField()
+    
+    # نوع فراخوان
+    round = serializers.SerializerMethodField()
+    
+    # وضعیت‌های مختلف
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    university_review_status_display = serializers.CharField(
+        source='get_university_review_status_display',
+        read_only=True
+    )
+    
+    class Meta:
+        model = Application
+        fields = [
+            'id',
+            'tracking_code',
+            'applicant',
+            'round',
+            'faculty_department',
+            'selected_program',
+            'university_info',
+            'rank_status',
+            'status',
+            'status_display',
+            'university_review_status',
+            'university_review_status_display',
+            'faculty_review_completed',
+            'total_score',
+            'created_at',
+            'university_reviewed_at',
+            'faculty_reviewed_at',
+        ]
+    
+    def get_applicant(self, obj):
+        """مشخصات داوطلب: نام کامل + کد ملی"""
+        return {
+            'full_name': obj.applicant.user.get_full_name(),
+            'national_id': obj.applicant.user.national_id,
+            'first_name': obj.applicant.user.first_name,
+            'last_name': obj.applicant.user.last_name,
+        }
+    
+    def get_faculty_department(self, obj):
+        """دانشکده/گروه آموزشی از اولین انتخاب"""
+        first_choice = obj.choices.select_related(
+            'program__faculty',
+            'program__department'
+        ).order_by('priority').first()
+        
+        if first_choice:
+            return {
+                'faculty_id': first_choice.program.faculty.id,
+                'faculty_name': first_choice.program.faculty.name,
+                'department_id': first_choice.program.department.id,
+                'department_name': first_choice.program.department.name,
+            }
+        return None
+    
+    def get_selected_program(self, obj):
+        """رشته انتخابی با اولویت اول"""
+        first_choice = obj.choices.select_related('program').order_by('priority').first()
+        
+        if first_choice:
+            return {
+                'program_id': first_choice.program.id,
+                'program_name': first_choice.program.name,
+                'program_code': first_choice.program.code,
+                'orientation': first_choice.program.orientation,
+                'priority': first_choice.priority,
+            }
+        return None
+    
+    def get_university_info(self, obj):
+        """دانشگاه محل تحصیل + ضریب"""
+        if obj.university_of_study:
+            weight = obj.university_weight.weight if obj.university_weight else 1.0
+            return {
+                'university_id': obj.university_of_study.id,
+                'university_name': obj.university_of_study.name,
+                'university_code': obj.university_of_study.code,
+                'weight': weight,
+            }
+        return None
+    
+    def get_rank_status(self, obj):
+        """وضعیت رتبه: ۲۰٪ یا ۱۰٪"""
+        if obj.rank_percentile_group:
+            return {
+                'group': obj.rank_percentile_group,
+                'label': '20% برتر' if obj.rank_percentile_group == 'TOP_20' else '10% بعدی' if obj.rank_percentile_group == 'NEXT_10' else obj.rank_percentile_group
+            }
+        return None
+    
+    def get_round(self, obj):
+        """اطلاعات فراخوان"""
+        return {
+            'id': obj.round.id,
+            'title': obj.round.title,
+            'round_type': obj.round.type,
+            'year': obj.round.year,
+        }
+class ApplicationDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer برای نمایش جزئیات کامل application برای صفحه جزئیات
+    """
+    applicant = serializers.SerializerMethodField()
     applicant_name = serializers.CharField(source='applicant.user.get_full_name', read_only=True)
     applicant_national_id = serializers.CharField(source='applicant.user.national_id', read_only=True)
     round_title = serializers.CharField(source='round.title', read_only=True)
@@ -124,6 +246,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'id', 'tracking_code', 'total_score', 'score_calculated_at',
             'created_at', 'updated_at'
         ]
+    
+    def get_applicant(self, obj):
+        """اطلاعات کامل داوطلب"""
+        return {
+            'full_name': obj.applicant.user.get_full_name(),
+            'national_id': obj.applicant.user.national_id,
+            'first_name': obj.applicant.user.first_name,
+            'last_name': obj.applicant.user.last_name,
+        }
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):

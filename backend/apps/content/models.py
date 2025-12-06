@@ -142,3 +142,53 @@ class StaticPage(TimeStampedModel):
     
     def __str__(self):
         return self.title
+
+
+class AdminAnnouncement(TimeStampedModel):
+    """
+    اطلاعیه‌های مخصوص ادمین‌ها
+    """
+    class Priority(models.TextChoices):
+        LOW = "LOW", "عادی"
+        MEDIUM = "MEDIUM", "متوسط"
+        HIGH = "HIGH", "مهم"
+        URGENT = "URGENT", "فوری"
+    
+    title = models.CharField(max_length=255, verbose_name="عنوان")
+    content = models.TextField(verbose_name="متن اطلاعیه")
+    priority = models.CharField(
+        max_length=10,
+        choices=Priority.choices,
+        default=Priority.MEDIUM,
+        verbose_name="اولویت"
+    )
+    
+    # نمایش برای چه کسانی
+    for_university_admins = models.BooleanField(default=True, verbose_name="مسئولین دانشگاه")
+    for_faculty_admins = models.BooleanField(default=True, verbose_name="مسئولین دانشکده")
+    
+    # محدودیت به نوع فراخوان خاص
+    for_ma_talent = models.BooleanField(default=True, verbose_name="استعداد ارشد")
+    for_phd_talent = models.BooleanField(default=True, verbose_name="استعداد دکتری")
+    for_phd_exam = models.BooleanField(default=True, verbose_name="آزمون دکتری")
+    for_olympiad = models.BooleanField(default=True, verbose_name="المپیاد")
+    
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    expires_at = models.DateTimeField(null=True, blank=True, verbose_name="تاریخ انقضا")
+    
+    created_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_announcements',
+        verbose_name="ایجادکننده"
+    )
+    
+    class Meta:
+        verbose_name = "اطلاعیه ادمین"
+        verbose_name_plural = "اطلاعیه‌های ادمین"
+        ordering = ['-priority', '-created_at']
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_priority_display()})"

@@ -2,7 +2,7 @@
 ViewSets for accounts app
 """
 from rest_framework import viewsets, status, filters
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,6 +13,29 @@ from apps.api.accounts_serializers import (
     AdminPermissionSerializer,
     AdminPermissionCreateUpdateSerializer
 )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def current_user_profile(request):
+    """
+    دریافت اطلاعات پروفایل کاربر فعلی
+    """
+    user = request.user
+    
+    # اطلاعات پایه کاربر
+    profile_data = {
+        'id': user.id,
+        'national_id': user.national_id,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'full_name': user.get_full_name(),
+        'email': user.email,
+        'mobile': user.mobile,
+        'role': user.role,
+    }
+    
+    return Response(profile_data)
 
 
 class AdminPermissionViewSet(viewsets.ModelViewSet):

@@ -6,12 +6,12 @@ from .models import FormReview, ApplicationWorkflowLog
 class FormReviewAdmin(admin.ModelAdmin):
     list_display = [
         'application',
-        'form_number',
+        'document_type',
         'status',
         'reviewer',
         'reviewed_at'
     ]
-    list_filter = ['form_number', 'status', 'reviewed_at']
+    list_filter = ['document_type', 'status', 'reviewed_at']
     search_fields = [
         'application__tracking_code',
         'application__applicant__user__national_id',

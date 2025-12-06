@@ -58,17 +58,11 @@ def register_initial(request):
             # Create or get applicant profile
             profile, _ = ApplicantProfile.objects.get_or_create(user=user)
             
-            # Find active round
-            try:
-                round_obj = AdmissionRound.objects.get(
-                    type=data['round_type'],
-                    is_active=True
-                )
-            except AdmissionRound.DoesNotExist:
-                return Response(
-                    {'error': 'فراخوان فعالی برای این نوع یافت نشد'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+            # Find active round (already validated in serializer)
+            round_obj = AdmissionRound.objects.get(
+                type=data['round_type'],
+                is_active=True
+            )
             
             # Create or get application
             application, app_created = Application.objects.get_or_create(

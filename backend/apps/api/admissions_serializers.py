@@ -38,12 +38,30 @@ class ProgramSerializer(serializers.ModelSerializer):
 
 class ProgramListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for program listings"""
-    faculty_name = serializers.CharField(source='faculty.name', read_only=True)
-    department_name = serializers.CharField(source='department.name', read_only=True)
+    degree_level_display = serializers.CharField(source='get_degree_level_display', read_only=True)
+    faculty = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
     
     class Meta:
         model = Program
         fields = [
             'id', 'code', 'name', 'orientation',
-            'degree_level', 'faculty_name', 'department_name', 'capacity'
+            'degree_level', 'degree_level_display', 
+            'faculty', 'department', 'capacity'
         ]
+    
+    def get_faculty(self, obj):
+        return {
+            'id': obj.faculty.id,
+            'name': obj.faculty.name,
+            'code': obj.faculty.code,
+        }
+    
+    def get_department(self, obj):
+        return {
+            'id': obj.department.id,
+            'name': obj.department.name,
+            'code': obj.department.code,
+            'faculty': obj.department.faculty_id,
+            'faculty_name': obj.department.faculty.name,
+        }

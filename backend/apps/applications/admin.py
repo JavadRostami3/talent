@@ -30,7 +30,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         'round__type',
         'round__year',
         'admission_overall_status',
-        'final_review_status'
+        'university_review_status',
+        'faculty_review_completed'
     ]
     search_fields = [
         'tracking_code',
@@ -39,7 +40,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         'applicant__user__last_name'
     ]
     readonly_fields = ['tracking_code', 'created_at', 'updated_at', 'score_calculated_at']
-    raw_id_fields = ['applicant', 'round', 'university_of_study', 'university_weight', 'final_reviewed_by']
+    raw_id_fields = ['applicant', 'round', 'university_of_study', 'university_weight', 'university_reviewed_by', 'faculty_reviewed_by']
     date_hierarchy = 'created_at'
     
     fieldsets = (
@@ -49,8 +50,8 @@ class ApplicationAdmin(admin.ModelAdmin):
         ('دانشگاه و امتیاز', {
             'fields': ('university_of_study', 'university_weight', 'total_score', 'score_calculated_at', 'rank_percentile_group')
         }),
-        ('بررسی نهایی', {
-            'fields': ('final_review_status', 'final_reviewed_by', 'final_reviewed_at')
+        ('بررسی دانشگاه و دانشکده', {
+            'fields': ('university_review_status', 'university_reviewed_by', 'university_reviewed_at', 'faculty_review_completed', 'faculty_reviewed_by', 'faculty_reviewed_at')
         }),
         ('وضعیت پذیرش', {
             'fields': ('admission_overall_status', 'admission_result_published_at')
@@ -92,10 +93,6 @@ class ApplicationEducationRecordAdmin(admin.ModelAdmin):
         'field_of_study',
         'university',
         'gpa',
-        'gpa_score',
-        'university_score',
-        'duration_score',
-        'total_score',
         'status'
     ]
     list_filter = ['degree_level', 'status', 'university']
@@ -104,8 +101,8 @@ class ApplicationEducationRecordAdmin(admin.ModelAdmin):
         'field_of_study',
         'university__name'
     ]
-    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
-    raw_id_fields = ['application', 'university', 'reviewed_by']
+    readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['application', 'university']
     
     fieldsets = (
         ('اطلاعات اصلی', {
@@ -448,9 +445,7 @@ class OlympiadRecordAdmin(admin.ModelAdmin):
         'olympiad_name',
         'year',
         'rank_level',
-        'rank_number',
-        'score',
-        'reviewed_by'
+        'rank_number'
     ]
     list_filter = ['olympiad_type', 'rank_level', 'year']
     search_fields = [
@@ -458,8 +453,8 @@ class OlympiadRecordAdmin(admin.ModelAdmin):
         'olympiad_name',
         'application__applicant__user__national_id'
     ]
-    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
-    raw_id_fields = ['application', 'reviewed_by']
+    readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['application']
     
     fieldsets = (
         ('اطلاعات المپیاد', {
@@ -496,9 +491,7 @@ class LanguageCertificateAdmin(admin.ModelAdmin):
         'language',
         'certificate_type',
         'test_score',
-        'issue_date',
-        'score',
-        'reviewed_by'
+        'issue_date'
     ]
     list_filter = ['language', 'certificate_type']
     search_fields = [
@@ -506,8 +499,8 @@ class LanguageCertificateAdmin(admin.ModelAdmin):
         'certificate_number',
         'application__applicant__user__national_id'
     ]
-    readonly_fields = ['created_at', 'updated_at', 'reviewed_at']
-    raw_id_fields = ['application', 'reviewed_by']
+    readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['application']
     
     fieldsets = (
         ('اطلاعات مدرک', {

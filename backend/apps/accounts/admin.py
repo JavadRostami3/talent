@@ -50,7 +50,7 @@ class AdminPermissionInline(admin.StackedInline):
     can_delete = False
     verbose_name = 'دسترسی‌های ادمین'
     verbose_name_plural = 'دسترسی‌های ادمین'
-    filter_horizontal = ['faculties', 'departments']
+    filter_horizontal = ['faculties']
     
     fieldsets = (
         ('دسترسی به انواع فراخوان', {
@@ -61,8 +61,8 @@ class AdminPermissionInline(admin.StackedInline):
                 'has_olympiad_access'
             )
         }),
-        ('دسترسی به دانشکده و گروه', {
-            'fields': ('faculties', 'departments'),
+        ('دسترسی به دانشکده', {
+            'fields': ('faculties',),
             'description': 'اگر هیچ موردی انتخاب نشود، دسترسی به همه موارد داده می‌شود'
         }),
         ('دسترسی کامل', {
@@ -81,8 +81,7 @@ class AdminPermissionAdmin(admin.ModelAdmin):
         'has_phd_exam_access',
         'has_olympiad_access',
         'has_full_access',
-        'get_faculties_count',
-        'get_departments_count'
+        'get_faculties_count'
     ]
     list_filter = [
         'has_ma_talent_access',
@@ -93,7 +92,7 @@ class AdminPermissionAdmin(admin.ModelAdmin):
         'faculties',
     ]
     search_fields = ['user__national_id', 'user__first_name', 'user__last_name']
-    filter_horizontal = ['faculties', 'departments']
+    filter_horizontal = ['faculties']
     raw_id_fields = ['user']
     
     fieldsets = (
