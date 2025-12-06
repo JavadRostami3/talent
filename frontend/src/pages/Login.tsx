@@ -40,13 +40,25 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      await login(data.nationalId, data.trackingCode);
+      const response = await login(data.nationalId, data.trackingCode);
+      
+      // Check if user is admin (shouldn't happen but handle it)
+      if (response?.user?.role !== 'APPLICANT') {
+        toast({
+          title: 'خطا',
+          description: 'لطفاً از صفحه ورود مدیران استفاده کنید',
+          variant: 'destructive',
+        });
+        navigate('/admin/login');
+        return;
+      }
+
       toast({
         title: 'خوش آمدید',
         description: 'ورود با موفقیت انجام شد',
       });
-      // Navigate based on role (will be handled by App routing)
-      navigate('/');
+      
+      navigate('/student/dashboard');
     } catch (error: any) {
       toast({
         title: 'خطا در ورود',
@@ -115,13 +127,22 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
               ثبت‌نام نکرده‌اید؟{' '}
               <a href="/register" className="text-primary hover:underline font-medium">
                 دریافت کد پیگیری
               </a>
             </p>
+            
+            <div className="pt-3 border-t border-border/50">
+              <a 
+                href="/admin/login" 
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ورود همکاران / پرسنل →
+              </a>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import React from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import AdminLogin from "./pages/AdminLogin";
 import Register from "./pages/Register";
 import Announcements from "./pages/Announcements";
 import StudentDashboard from "./pages/student/Dashboard";
@@ -72,6 +73,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/login" element={<Login />} />
+    <Route path="/admin/login" element={<AdminLogin />} />
     <Route path="/register" element={<Register />} />
     <Route path="/announcements" element={<Announcements />} />
     

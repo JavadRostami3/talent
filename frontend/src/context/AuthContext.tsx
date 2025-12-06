@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '@/services/authService';
-import type { User } from '@/types/models';
+import type { User, LoginResponse } from '@/types/models';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (nationalId: string, trackingCode: string) => Promise<void>;
+  login: (nationalId: string, trackingCode: string) => Promise<LoginResponse>;
+  adminLogin: (nationalId: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
   loading: boolean;
 }
@@ -18,13 +19,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
-    setUser(currentUser as any);
+    setUser(currentUser);
     setLoading(false);
   }, []);
 
-  const login = async (nationalId: string, trackingCode: string) => {
+  const login = async (nationalId: string, trackingCode: string): Promise<LoginResponse> => {
     const response = await authService.login(nationalId, trackingCode);
-    setUser(response.user as any);
+    setUser(response.user);
+    return response;
+  };
+
+  const adminLogin = async (nationalId: string, password: string): Promise<LoginResponse> => {
+    const response = await authService.adminLogin(nationalId, password);
+    setUser(response.user);
+    return response;
   };
 
   const logout = () => {
@@ -36,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     isAuthenticated: !!user,
     login,
+    adminLogin,
     logout,
     loading,
   };
