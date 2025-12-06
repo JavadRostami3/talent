@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Home, GraduationCap, FlaskConical, Trophy, 
-  HelpCircle, ChevronDown, LogOut, Settings, User 
+  HelpCircle, ChevronDown, LogOut, Settings, User,
+  FileText, Mail, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -95,6 +96,30 @@ const AdminLayout = () => {
       icon: Home,
       path: '/admin/dashboard',
       show: true,
+    },
+    {
+      label: 'بررسی دانشگاه',
+      icon: FileText,
+      path: '/admin/university/applications',
+      show: adminProfile?.role === 'UNIVERSITY_ADMIN' || adminProfile?.role === 'SYSTEM_ADMIN' || false,
+    },
+    {
+      label: 'بررسی دانشکده',
+      icon: GraduationCap,
+      path: '/admin/faculty/applications',
+      show: adminProfile?.role === 'FACULTY_ADMIN' || adminProfile?.role === 'SYSTEM_ADMIN' || false,
+    },
+    {
+      label: 'گزارش‌ها',
+      icon: BarChart3,
+      path: '/admin/reports',
+      show: true,
+    },
+    {
+      label: 'ارسال ایمیل گروهی',
+      icon: Mail,
+      path: '/admin/bulk-email',
+      show: adminProfile?.role === 'SYSTEM_ADMIN' || false,
     },
     {
       label: 'آزمون دکتری',

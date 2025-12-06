@@ -762,6 +762,7 @@ const applicationService = {
   
   // Admin - University Review
   getAdminStatistics,
+  getStatistics: getAdminStatistics, // Alias
   performUniversityReview,
   scoreApplication,
   reviewDocuments,

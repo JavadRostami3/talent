@@ -90,7 +90,7 @@ const UniversityAdminApplicationReview = () => {
   const fetchApplication = async () => {
     setLoading(true);
     try {
-      const response = await api.get<ApplicationDetail>(`/api/accounts/applications/${id}/`);
+      const response = await api.get<ApplicationDetail>(`/api/admin/applications/${id}/`);
       setApplication(response.data);
       
       if (response.data.university_review_comment) {

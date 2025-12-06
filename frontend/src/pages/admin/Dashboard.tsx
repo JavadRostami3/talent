@@ -7,6 +7,7 @@ import {
   Trophy, BookOpen, ChevronLeft 
 } from 'lucide-react';
 import api from '@/services/api';
+import StatisticsCards from '@/components/admin/StatisticsCards';
 
 interface AdminProfile {
   full_name: string;
@@ -125,6 +126,9 @@ const AdminDashboard = () => {
           شما به عنوان {adminProfile.role_display} وارد شده‌اید
         </p>
       </div>
+
+      {/* Statistics Cards */}
+      <StatisticsCards />
 
       {/* Announcements */}
       <Card>

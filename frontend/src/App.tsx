@@ -24,8 +24,11 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ApplicationReview from "./pages/admin/ApplicationReview";
 import UniversityAdminApplicationsList from "./pages/admin/UniversityAdminApplicationsList";
 import UniversityAdminApplicationReview from "./pages/admin/UniversityAdminApplicationReview";
+import UniversityApplicationsList from "./pages/admin/university/ApplicationsList";
 import FacultyAdminApplicationsList from "./pages/admin/FacultyAdminApplicationsList";
 import FacultyAdminApplicationReview from "./pages/admin/FacultyAdminApplicationReview";
+import FacultyApplicationsList from "./pages/admin/faculty/ApplicationsList";
+import FacultyApplicationReview from "./pages/admin/faculty/ApplicationReview";
 import PhdExamApplicants from "./pages/admin/applicants/PhdExamApplicants";
 import MastersTalentedApplicants from "./pages/admin/applicants/MastersTalentedApplicants";
 import PhdTalentedApplicants from "./pages/admin/applicants/PhdTalentedApplicants";
@@ -33,6 +36,8 @@ import OlympiadApplicants from "./pages/admin/applicants/OlympiadApplicants";
 import MastersGuide from "./pages/admin/guides/MastersGuide";
 import PhdGuide from "./pages/admin/guides/PhdGuide";
 import ReportsGuide from "./pages/admin/guides/ReportsGuide";
+import ReportsPage from "./pages/admin/ReportsPage";
+import BulkEmailPage from "./pages/admin/BulkEmailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -110,12 +115,12 @@ const AppRoutes = () => (
       <Route path="dashboard" element={<AdminDashboard />} />
       
       {/* University Admin */}
-      <Route path="university/applications" element={<UniversityAdminApplicationsList />} />
+      <Route path="university/applications" element={<UniversityApplicationsList />} />
       <Route path="university/applications/:id" element={<UniversityAdminApplicationReview />} />
       
       {/* Faculty Admin */}
-      <Route path="faculty/applications" element={<FacultyAdminApplicationsList />} />
-      <Route path="faculty/applications/:id" element={<FacultyAdminApplicationReview />} />
+      <Route path="faculty/applications" element={<FacultyApplicationsList />} />
+      <Route path="faculty/applications/:id" element={<FacultyApplicationReview />} />
       
       {/* Round Type specific routes - Applicants Lists */}
       <Route path="applicants/phd-exam" element={<PhdExamApplicants />} />
@@ -132,6 +137,12 @@ const AppRoutes = () => (
       <Route path="guides/interview" element={<PhdGuide />} />
       <Route path="guides/faculty-recruitment" element={<ReportsGuide />} />
       <Route path="guides/reports" element={<ReportsGuide />} />
+      
+      {/* Reports */}
+      <Route path="reports" element={<ReportsPage />} />
+      
+      {/* Bulk Actions */}
+      <Route path="bulk-email" element={<BulkEmailPage />} />
       
       {/* Support */}
       <Route path="support" element={<div className="p-8"><h1 className="text-2xl font-bold">پشتیبانی</h1></div>} />
