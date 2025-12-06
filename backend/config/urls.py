@@ -28,8 +28,6 @@ urlpatterns = [
     path('api/', include('apps.api.applications_urls')),  # Applicant applications management
     path('api/', include('apps.api.research_urls')),  # Unified Research Records API
     path('api/admin/', include('apps.api.admin_urls')),  # Admin endpoints
-    # path('api/public/', include('apps.api.public_urls')),
-    # path('api/applicant/', include('apps.api.applicant_urls'))،
 ]
 
 # Serve media files in development

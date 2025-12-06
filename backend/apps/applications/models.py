@@ -66,6 +66,7 @@ class Application(TimeStampedModel):
         max_length=50,
         choices=Status.choices,
         default=Status.NEW,
+        db_index=True,  # برای بهینه‌سازی فیلترهای مکرر
         verbose_name="وضعیت"
     )
     
@@ -110,6 +111,7 @@ class Application(TimeStampedModel):
         max_length=30,
         choices=UniversityReviewStatus.choices,
         default=UniversityReviewStatus.PENDING,
+        db_index=True,  # برای بهینه‌سازی فیلتر بررسی ادمین
         verbose_name="وضعیت بررسی مسئول دانشگاه"
     )
     university_review_comment = models.TextField(
@@ -277,7 +279,10 @@ class ApplicationChoice(TimeStampedModel):
         verbose_name = "انتخاب رشته"
         verbose_name_plural = "انتخاب‌های رشته"
         ordering = ['application', 'priority']
-        unique_together = ['application', 'priority']
+        unique_together = [
+            ['application', 'priority'],  # هر درخواست نمی‌تواند دو انتخاب با اولویت یکسان داشته باشد
+            ['application', 'program']     # هر درخواست نمی‌تواند یک برنامه را بیش از یک بار انتخاب کند
+        ]
     
     def __str__(self):
         return f"{self.application.tracking_code} - اولویت {self.priority}: {self.program.name}"

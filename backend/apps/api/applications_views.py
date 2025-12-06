@@ -196,7 +196,7 @@ def manage_choices(request, application_id):
         application = get_object_or_404(Application, id=application_id, applicant=applicant)
         
         if request.method == 'GET':
-            choices = application.program_choices.all()
+            choices = application.choices.all()
             serializer = ApplicationChoiceSerializer(choices, many=True)
             return Response(serializer.data)
         

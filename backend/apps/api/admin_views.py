@@ -55,8 +55,8 @@ def university_admin_applications_list(request):
         'university_reviewed_by',
         'faculty_reviewed_by'
     ).prefetch_related(
-        'selected_programs__program__faculty',
-        'selected_programs__program__department'
+        'choices__program__faculty',
+        'choices__program__department'
     )
     
     # فیلتر نوع فراخوان بر اساس دسترسی
@@ -119,7 +119,7 @@ def university_admin_applications_list(request):
     faculty_id = request.GET.get('faculty_id')
     if faculty_id:
         queryset = queryset.filter(
-            selected_programs__program__faculty_id=faculty_id
+            choices__program__faculty_id=faculty_id
         ).distinct()
     
     # فیلتر گروه آموزشی
@@ -190,10 +190,9 @@ def faculty_admin_applications_list(request):
         'university_reviewed_by',
         'faculty_reviewed_by'
     ).prefetch_related(
-        'selected_programs__program__faculty',
-        'selected_programs__program__department',
-        'education_records',
-        'research_records'
+        'choices__program__faculty',
+        'choices__program__department',
+        'education_records'
     ).filter(
         status__in=[
             Application.Status.APPROVED_BY_UNIVERSITY,
@@ -242,7 +241,7 @@ def faculty_admin_applications_list(request):
                     )
         
         queryset = queryset.filter(
-            selected_programs__program__faculty_id=faculty_id
+            choices__program__faculty_id=faculty_id
         ).distinct()
     else:
         # اگر دانشکده مشخص نشده، فیلتر بر اساس دسترسی
@@ -250,14 +249,14 @@ def faculty_admin_applications_list(request):
             allowed_faculties = admin_permission.faculties.all()
             if allowed_faculties.exists():
                 queryset = queryset.filter(
-                    selected_programs__program__faculty__in=allowed_faculties
+                    choices__program__faculty__in=allowed_faculties
                 ).distinct()
     
     # فیلتر گروه آموزشی
     department_id = request.GET.get('department_id')
     if department_id:
         queryset = queryset.filter(
-            selected_programs__program__department_id=department_id
+            choices__program__department_id=department_id
         ).distinct()
     
     # فیلتر وضعیت بررسی دانشکده
@@ -418,7 +417,7 @@ def faculty_review_application(request, application_id):
         )
     
     # بررسی دسترسی به دانشکده
-    application_faculties = application.selected_programs.values_list(
+    application_faculties = application.choices.values_list(
         'program__faculty_id', flat=True
     )
     if not admin_permission.has_full_access:
