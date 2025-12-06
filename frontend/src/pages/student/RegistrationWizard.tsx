@@ -40,7 +40,7 @@ const RegistrationWizard = () => {
     setLoading(true);
     try {
       // Get user's application for current round
-      const response = await api.get<Application[]>('/api/applications/');
+      const response = await api.get<Application[]>('/api/applicant/applications/');
       
       if (response.data.length > 0) {
         const app = response.data[0];
@@ -90,9 +90,7 @@ const RegistrationWizard = () => {
   const handleDocumentUploadComplete = async () => {
     try {
       // Submit the application
-      await api.patch(`/api/applications/${application?.id}/`, {
-        status: 'SUBMITTED',
-      });
+      await api.post(`/api/applicant/applications/${application?.id}/submit/`);
 
       toast({
         title: 'ثبت نهایی موفق',

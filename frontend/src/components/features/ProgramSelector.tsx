@@ -39,7 +39,7 @@ const ProgramSelector = ({
   const fetchPrograms = async () => {
     setSearching(true);
     try {
-      const response = await api.get<Program[]>(`/api/core/programs/`, {
+      const response = await api.get<Program[]>(`/api/public/programs/`, {
         params: { round_type: roundType, is_active: true }
       });
       setPrograms(response.data);
@@ -145,11 +145,11 @@ const ProgramSelector = ({
     setLoading(true);
     try {
       // Delete existing choices
-      await api.delete(`/api/applications/${applicationId}/choices/`);
+      await api.delete(`/api/applicant/applications/${applicationId}/choices/`);
 
       // Create new choices
       for (const program of selectedPrograms) {
-        await api.post(`/api/applications/${applicationId}/choices/`, {
+        await api.post(`/api/applicant/applications/${applicationId}/choices/`, {
           program_id: program.id,
           priority: program.priority,
         });

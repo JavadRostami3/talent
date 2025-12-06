@@ -16,7 +16,7 @@ const SubmitApplication = () => {
       setSubmitting(true);
       
       // Get application
-      const response = await api.get('/api/applications/');
+      const response = await api.get('/api/applicant/applications/');
       const applicationId = response.data.results[0]?.id;
       
       if (!applicationId) {
@@ -24,7 +24,7 @@ const SubmitApplication = () => {
       }
 
       // Submit
-      await api.post(`/api/applications/${applicationId}/submit/`);
+      await api.post(`/api/applicant/applications/${applicationId}/submit/`);
       
       toast({
         title: 'موفق',

@@ -39,7 +39,7 @@ export interface ApplicationsResponse {
 }
 
 export interface ReviewRequest {
-  status: 'approved' | 'defective';
+  status: 'APPROVED' | 'RETURNED_FOR_CORRECTION';
   feedback?: string;
 }
 
@@ -114,7 +114,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.5,
       10,
       'آزمون دکتری',
-      'approved',
+      'APPROVED',
       'phd_exam',
       daysAgo(2),
     ),
@@ -126,7 +126,7 @@ const createMockApplications = (): StudentProfile[] => {
       17.8,
       25,
       'آزمون دکتری',
-      'defective',
+      'RETURNED_FOR_CORRECTION',
       'phd_exam',
       daysAgo(4),
       'مدارک تکمیلی پایان‌نامه بارگذاری نشده است.',
@@ -141,7 +141,7 @@ const createMockApplications = (): StudentProfile[] => {
         18.9,
         5,
         'آزمون دکتری',
-        'under_review',
+        'UNDER_UNIVERSITY_REVIEW',
         'phd_exam',
         createdAt,
       );
@@ -169,7 +169,7 @@ const createMockApplications = (): StudentProfile[] => {
       19.2,
       8,
       'استعداد درخشان ارشد',
-      'approved',
+      'APPROVED',
       'masters_talented',
       daysAgo(3),
     ),
@@ -181,7 +181,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.1,
       20,
       'استعداد درخشان ارشد',
-      'defective',
+      'RETURNED_FOR_CORRECTION',
       'masters_talented',
       daysAgo(6),
       'کارنامه مقطع کارشناسی ناقص است.',
@@ -194,7 +194,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.7,
       12,
       'استعداد درخشان ارشد',
-      'under_review',
+      'UNDER_UNIVERSITY_REVIEW',
       'masters_talented',
       daysAgo(1),
     ),
@@ -208,7 +208,7 @@ const createMockApplications = (): StudentProfile[] => {
       19.4,
       6,
       'استعداد درخشان دکتری',
-      'approved',
+      'APPROVED',
       'phd_talented',
       daysAgo(5),
     ),
@@ -220,7 +220,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.3,
       18,
       'استعداد درخشان دکتری',
-      'defective',
+      'RETURNED_FOR_CORRECTION',
       'phd_talented',
       daysAgo(9),
       'مدرک زبان معتبر بارگذاری نشده است.',
@@ -233,7 +233,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.0,
       22,
       'استعداد درخشان دکتری',
-      'under_review',
+      'UNDER_UNIVERSITY_REVIEW',
       'phd_talented',
       daysAgo(2),
     ),
@@ -247,7 +247,7 @@ const createMockApplications = (): StudentProfile[] => {
       19.0,
       7,
       'المپیاد علمی',
-      'approved',
+      'APPROVED',
       'olympiad',
       daysAgo(4),
     ),
@@ -259,7 +259,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.2,
       19,
       'المپیاد علمی',
-      'defective',
+      'RETURNED_FOR_CORRECTION',
       'olympiad',
       daysAgo(8),
       'گواهی رتبه المپیاد به‌درستی خوانا نیست.',
@@ -272,7 +272,7 @@ const createMockApplications = (): StudentProfile[] => {
       18.6,
       11,
       'المپیاد علمی',
-      'under_review',
+      'UNDER_UNIVERSITY_REVIEW',
       'olympiad',
       daysAgo(2),
     ),
@@ -303,17 +303,17 @@ const getMockStats = (): AdminStats => {
     const categoryApps = applications.filter((app) => app.category === category);
     return {
       total: categoryApps.length,
-      pendingReview: categoryApps.filter((app) => app.status === 'under_review').length,
-      approved: categoryApps.filter((app) => app.status === 'approved').length,
-      rejected: categoryApps.filter((app) => app.status === 'defective').length,
+      pendingReview: categoryApps.filter((app) => app.status === 'UNDER_UNIVERSITY_REVIEW').length,
+      approved: categoryApps.filter((app) => app.status === 'APPROVED').length,
+      rejected: categoryApps.filter((app) => app.status === 'RETURNED_FOR_CORRECTION').length,
     };
   };
 
   return {
     totalApplications: applications.length,
-    pendingReview: applications.filter((app) => app.status === 'under_review').length,
-    approved: applications.filter((app) => app.status === 'approved').length,
-    rejected: applications.filter((app) => app.status === 'defective').length,
+    pendingReview: applications.filter((app) => app.status === 'UNDER_UNIVERSITY_REVIEW').length,
+    approved: applications.filter((app) => app.status === 'APPROVED').length,
+    rejected: applications.filter((app) => app.status === 'RETURNED_FOR_CORRECTION').length,
     registrationOpen: localStorage.getItem(MOCK_REGISTRATION_KEY) !== 'false',
     categories: {
       phd_exam: calculateCategoryStats('phd_exam'),
@@ -339,9 +339,9 @@ export const adminService = {
           const categoryApps = applications.filter((app) => app.category === category);
           return {
             total: categoryApps.length,
-            pendingReview: categoryApps.filter((app) => app.status === 'under_review').length,
-            approved: categoryApps.filter((app) => app.status === 'approved').length,
-            rejected: categoryApps.filter((app) => app.status === 'defective').length,
+            pendingReview: categoryApps.filter((app) => app.status === 'UNDER_UNIVERSITY_REVIEW').length,
+            approved: categoryApps.filter((app) => app.status === 'APPROVED').length,
+            rejected: categoryApps.filter((app) => app.status === 'RETURNED_FOR_CORRECTION').length,
           };
         };
         return {
@@ -498,7 +498,7 @@ export const adminService = {
 // Helper function for development/testing - change application status manually
 export const resetApplicationStatus = (
   userId: string,
-  newStatus: 'draft' | 'under_review' | 'defective' | 'approved',
+  newStatus: 'DRAFT' | 'UNDER_UNIVERSITY_REVIEW' | 'RETURNED_FOR_CORRECTION' | 'APPROVED',
   feedback?: string
 ): void => {
   if (!USE_MOCK_API) {

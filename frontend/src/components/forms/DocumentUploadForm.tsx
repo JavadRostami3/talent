@@ -56,7 +56,7 @@ const DocumentUploadForm = ({ applicationId, onComplete, onBack }: DocumentUploa
     setLoading(true);
     try {
       const response = await api.get<Document[]>(
-        `/api/applications/${applicationId}/documents/`
+        `/api/applicant/applications/${applicationId}/documents/`
       );
       setDocuments(response.data);
     } catch (error: any) {
@@ -98,7 +98,7 @@ const DocumentUploadForm = ({ applicationId, onComplete, onBack }: DocumentUploa
     formData.append('document_type', type);
 
     try {
-      await api.post(`/api/applications/${applicationId}/documents/`, formData, {
+      await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -125,7 +125,7 @@ const DocumentUploadForm = ({ applicationId, onComplete, onBack }: DocumentUploa
     if (!confirm('آیا از حذف این مدرک اطمینان دارید؟')) return;
 
     try {
-      await api.delete(`/api/applications/${applicationId}/documents/${documentId}/`);
+      await api.delete(`/api/applicant/applications/${applicationId}/documents/${documentId}/`);
 
       toast({
         title: 'حذف موفق',

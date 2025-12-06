@@ -91,8 +91,8 @@ const EducationInfo = () => {
       setLoading(true);
       
       const [appResponse, univResponse] = await Promise.all([
-        api.get('/api/applications/'),
-        api.get('/api/core/universities/'),
+        api.get('/api/applicant/applications/'),
+        api.get('/api/public/universities/'),
       ]);
       
       const application = appResponse.data.results[0];
@@ -176,7 +176,7 @@ const EducationInfo = () => {
     try {
       setSaving(true);
       
-      const appResponse = await api.get('/api/applications/');
+      const appResponse = await api.get('/api/applicant/applications/');
       const applicationId = appResponse.data.results[0]?.id;
       
       if (!applicationId) {
@@ -189,9 +189,7 @@ const EducationInfo = () => {
         educationRecords.push(mastersData);
       }
 
-      await api.post(`/api/applications/${applicationId}/education/`, {
-        education_records: educationRecords,
-      });
+      await api.post(`/api/applicant/applications/${applicationId}/education-records/`, educationRecords);
 
       toast({
         title: 'موفق',

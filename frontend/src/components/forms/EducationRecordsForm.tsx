@@ -64,7 +64,7 @@ const EducationRecordsForm = ({
     setLoading(true);
     try {
       const response = await api.get<EducationRecord[]>(
-        `/api/applications/${applicationId}/education-records/`
+        `/api/applicant/applications/${applicationId}/education-records/`
       );
       setRecords(response.data);
     } catch (error: any) {
@@ -80,7 +80,7 @@ const EducationRecordsForm = ({
 
   const onSubmit = async (data: EducationRecordFormData) => {
     try {
-      await api.post(`/api/applications/${applicationId}/education-records/`, data);
+      await api.post(`/api/applicant/applications/${applicationId}/education-records/`, data);
 
       toast({
         title: 'ذخیره موفق',
@@ -108,7 +108,7 @@ const EducationRecordsForm = ({
 
     try {
       await api.delete(
-        `/api/applications/${applicationId}/education-records/${recordId}/`
+        `/api/applicant/applications/${applicationId}/education-records/${recordId}/`
       );
 
       toast({

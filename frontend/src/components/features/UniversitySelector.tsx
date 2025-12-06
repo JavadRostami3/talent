@@ -30,7 +30,7 @@ const UniversitySelector = ({ value, onChange, error }: UniversitySelectorProps)
   const fetchUniversities = async () => {
     setLoading(true);
     try {
-      const response = await api.get<University[]>('/api/core/universities/', {
+      const response = await api.get<University[]>('/api/public/universities/', {
         params: { search: searchTerm },
       });
       setUniversities(response.data);
