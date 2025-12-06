@@ -8,7 +8,9 @@ from django.utils import timezone
 from apps.applications.models import Application
 from apps.accounts.models import AdminPermission
 from apps.core.models import Faculty, Department
+from apps.workflow.models import FormReview
 from .applications_serializers import ApplicationListSerializer, ApplicationDetailSerializer
+from .workflow_serializers import FormReviewSerializer, FormReviewCreateUpdateSerializer
 from .permissions import IsUniversityAdmin, IsFacultyAdmin
 
 
@@ -716,4 +718,191 @@ def get_admin_announcements(request):
         })
     
     return Response({'announcements': announcements})
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsUniversityAdmin])
+def manage_document_review(request, application_id):
+    """
+    مدیریت بررسی مدارک توسط مسئول دانشگاه
+    
+    GET: دریافت لیست بررسی‌های مدارک یک درخواست
+    POST: ایجاد یا به‌روزرسانی بررسی مدارک
+    """
+    try:
+        application = Application.objects.select_related(
+            'applicant__user',
+            'round'
+        ).get(id=application_id)
+    except Application.DoesNotExist:
+        return Response(
+            {'error': 'درخواست یافت نشد'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # بررسی دسترسی
+    admin_permission = request.user.admin_permission
+    if not admin_permission.can_review_application(application):
+        return Response(
+            {'error': 'شما دسترسی بررسی این درخواست را ندارید'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if request.method == 'GET':
+        # دریافت لیست بررسی‌های موجود
+        reviews = FormReview.objects.filter(
+            application=application
+        ).select_related('reviewer').order_by('document_type')
+        
+        serializer = FormReviewSerializer(reviews, many=True)
+        return Response({
+            'application_id': application.id,
+            'tracking_code': application.tracking_code,
+            'reviews': serializer.data
+        })
+    
+    elif request.method == 'POST':
+        # ایجاد یا به‌روزرسانی بررسی
+        document_type = request.data.get('document_type')
+        
+        if not document_type:
+            return Response(
+                {'error': 'نوع مدارک (document_type) الزامی است'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # بررسی اگر قبلاً بررسی شده
+            review = FormReview.objects.get(
+                application=application,
+                document_type=document_type
+            )
+            serializer = FormReviewCreateUpdateSerializer(
+                review,
+                data=request.data,
+                context={'request': request},
+                partial=True
+            )
+        except FormReview.DoesNotExist:
+            # ایجاد بررسی جدید
+            serializer = FormReviewCreateUpdateSerializer(
+                data=request.data,
+                context={'request': request}
+            )
+        
+        if serializer.is_valid():
+            review = serializer.save()
+            
+            # ثبت لاگ در workflow
+            from apps.workflow.models import ApplicationWorkflowLog
+            ApplicationWorkflowLog.objects.create(
+                application=application,
+                step_type='DOCUMENT_REVIEW',
+                description=f"بررسی مدارک {review.get_document_type_display()}: {review.get_status_display()}",
+                created_by=request.user
+            )
+            
+            return Response(
+                FormReviewSerializer(review).data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_application_document_reviews(request, application_id):
+    """
+    دریافت وضعیت بررسی مدارک یک درخواست (برای داوطلب یا ادمین)
+    """
+    try:
+        application = Application.objects.get(id=application_id)
+    except Application.DoesNotExist:
+        return Response(
+            {'error': 'درخواست یافت نشد'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # بررسی دسترسی
+    user = request.user
+    if user.role == 'APPLICANT':
+        # داوطلب فقط به پرونده خودش دسترسی دارد
+        if application.applicant.user != user:
+            return Response(
+                {'error': 'شما دسترسی به این درخواست ندارید'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    elif user.role in ['UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SUPERADMIN']:
+        # ادمین‌ها باید دسترسی لازم داشته باشند
+        try:
+            admin_permission = user.admin_permission
+            if not admin_permission.can_review_application(application):
+                return Response(
+                    {'error': 'شما دسترسی به این درخواست ندارید'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except AdminPermission.DoesNotExist:
+            return Response(
+                {'error': 'شما دسترسی ادمین ندارید'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    
+    # دریافت بررسی‌ها
+    reviews = FormReview.objects.filter(
+        application=application
+    ).select_related('reviewer').order_by('document_type')
+    
+    serializer = FormReviewSerializer(reviews, many=True)
+    
+    return Response({
+        'application_id': application.id,
+        'tracking_code': application.tracking_code,
+        'reviews': serializer.data,
+        'overall_status': _get_overall_document_status(reviews)
+    })
+
+
+def _get_overall_document_status(reviews):
+    """محاسبه وضعیت کلی بررسی مدارک"""
+    if not reviews.exists():
+        return {
+            'status': 'PENDING',
+            'status_display': 'در انتظار بررسی',
+            'description': 'هنوز بررسی نشده'
+        }
+    
+    # اگر همه تایید شده
+    all_approved = all(r.status == 'APPROVED' for r in reviews)
+    if all_approved:
+        return {
+            'status': 'APPROVED',
+            'status_display': 'تایید شده',
+            'description': 'تمام مدارک تایید شده'
+        }
+    
+    # اگر حداقل یکی رد شده
+    any_rejected = any(r.status == 'REJECTED' for r in reviews)
+    if any_rejected:
+        return {
+            'status': 'REJECTED',
+            'status_display': 'رد شده',
+            'description': 'برخی مدارک رد شده'
+        }
+    
+    # اگر برخی با نقص تایید شده
+    any_defect = any(r.status == 'APPROVED_WITH_DEFECT' for r in reviews)
+    if any_defect:
+        return {
+            'status': 'APPROVED_WITH_DEFECT',
+            'status_display': 'تایید شده با نقص',
+            'description': 'برخی مدارک با نقص تایید شده'
+        }
+    
+    return {
+        'status': 'PENDING',
+        'status_display': 'در انتظار بررسی',
+        'description': 'در حال بررسی'
+    }
+
 

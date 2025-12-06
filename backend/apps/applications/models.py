@@ -93,6 +93,14 @@ class Application(TimeStampedModel):
         verbose_name="گروه رتبه"
     )
     
+    # رتبه آزمون دکتری (برای مسیر آزمون دکتری)
+    exam_rank = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="رتبه آزمون دکتری",
+        help_text="رتبه کسب شده در آزمون دکتری (فقط برای مسیر PHD_EXAM)"
+    )
+    
     total_score = models.FloatField(default=0, verbose_name="امتیاز نهایی")
     score_calculated_at = models.DateTimeField(
         null=True,

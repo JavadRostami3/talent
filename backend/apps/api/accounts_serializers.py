@@ -164,13 +164,15 @@ class ApplicantProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.Serializer):
-    """Serializer for initial registration"""
+    """Serializer for simplified initial registration"""
     national_id = serializers.CharField(max_length=10, required=True)
-    first_name = serializers.CharField(max_length=100, required=True)
-    last_name = serializers.CharField(max_length=100, required=True)
-    mobile = serializers.CharField(max_length=15, required=True)
-    email = serializers.EmailField(required=True)
     round_type = serializers.CharField(max_length=20, required=True)
+    
+    # اطلاعات اختیاری که می‌توان بعداً تکمیل کرد
+    first_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    mobile = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
     
     def validate_national_id(self, value):
         """Validate national ID format and checksum"""
@@ -182,10 +184,9 @@ class UserRegistrationSerializer(serializers.Serializer):
     
     def validate_mobile(self, value):
         """Validate mobile number format"""
-        from apps.api.validators import validate_mobile_number
-        
-        # چک کردن فرمت شماره موبایل
-        validate_mobile_number(value)
+        if value:  # فقط اگر مقدار وارد شده باشد
+            from apps.api.validators import validate_mobile_number
+            validate_mobile_number(value)
         return value
     
     def validate_round_type(self, value):

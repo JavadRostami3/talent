@@ -35,24 +35,30 @@ def register_initial(request):
     
     try:
         with transaction.atomic():
-            # Find or create user
+            # Find or create user with minimal required info
+            user_defaults = {
+                'first_name': data.get('first_name', ''),
+                'last_name': data.get('last_name', ''),
+                'mobile': data.get('mobile', ''),
+                'email': data.get('email', ''),
+                'role': 'APPLICANT'
+            }
+            
             user, user_created = User.objects.get_or_create(
                 national_id=data['national_id'],
-                defaults={
-                    'first_name': data['first_name'],
-                    'last_name': data['last_name'],
-                    'mobile': data['mobile'],
-                    'email': data['email'],
-                    'role': 'APPLICANT'
-                }
+                defaults=user_defaults
             )
             
-            # Update user info if already exists
+            # Update user info if provided and user already exists
             if not user_created:
-                user.first_name = data['first_name']
-                user.last_name = data['last_name']
-                user.mobile = data['mobile']
-                user.email = data['email']
+                if data.get('first_name'):
+                    user.first_name = data['first_name']
+                if data.get('last_name'):
+                    user.last_name = data['last_name']
+                if data.get('mobile'):
+                    user.mobile = data['mobile']
+                if data.get('email'):
+                    user.email = data['email']
                 user.save()
             
             # Create or get applicant profile

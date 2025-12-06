@@ -14,5 +14,9 @@ urlpatterns = [
     # Faculty Admin endpoints
     path('faculty/applications/', admin_views.faculty_admin_applications_list, name='faculty-applications-list'),
     path('faculty/applications/<int:application_id>/review/', admin_views.faculty_review_application, name='faculty-review-application'),
+    
+    # Document Review endpoints
+    path('applications/<int:application_id>/documents/', admin_views.manage_document_review, name='manage-document-review'),
+    path('applications/<int:application_id>/documents/status/', admin_views.get_application_document_reviews, name='get-document-reviews'),
 ]
 
