@@ -91,10 +91,10 @@ const PersonalInfo = () => {
       });
 
       // Update application status
-      const appsResponse = await api.get('/api/applications/');
+      const appsResponse = await api.get('/api/applicant/applications/');
       if (appsResponse.data.length > 0) {
         const app = appsResponse.data[0];
-        await api.patch(`/api/applications/${app.id}/update/`, {
+        await api.patch(`/api/applicant/applications/${app.id}/update/`, {
           status: 'PERSONAL_INFO_COMPLETED',
         });
       }

@@ -10,7 +10,14 @@ export interface StudentProfile {
   gpa?: number;
   universityRank?: number;
   talentType?: string;
-  status: 'draft' | 'under_review' | 'defective' | 'approved';
+  status:
+    | 'DRAFT'
+    | 'SUBMITTED'
+    | 'UNDER_UNIVERSITY_REVIEW'
+    | 'UNDER_FACULTY_REVIEW'
+    | 'RETURNED_FOR_CORRECTION'
+    | 'APPROVED'
+    | 'REJECTED';
   adminFeedback?: string;
   documents?: Document[];
   createdAt: string;
@@ -44,7 +51,7 @@ const createMockProfile = (): StudentProfile => ({
   gpa: 18.5,
   universityRank: 25,
   talentType: 'پژوهشی',
-  status: 'draft',
+  status: 'DRAFT',
   documents: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -93,7 +100,7 @@ export const userService = {
       const profile = getMockProfile();
       const updatedProfile = persistMockProfile({
         ...profile,
-        status: 'under_review',
+        status: 'UNDER_UNIVERSITY_REVIEW',
         adminFeedback: undefined,
       });
       return Promise.resolve(updatedProfile);

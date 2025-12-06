@@ -55,7 +55,7 @@ const DocumentsUpload = () => {
 
   const fetchApplication = async () => {
     try {
-      const response = await api.get('/api/applications/');
+      const response = await api.get('/api/applicant/applications/');
       if (response.data.length > 0) {
         const app = response.data[0];
         setApplicationId(app.id);
@@ -84,7 +84,7 @@ const DocumentsUpload = () => {
     try {
       setUploadProgress({ ...uploadProgress, [type]: 0 });
 
-      const response = await api.post('/api/documents/upload/', formData, {
+      const response = await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -109,16 +109,16 @@ const DocumentsUpload = () => {
           ['PERSONAL_PHOTO', 'NATIONAL_CARD', 'ID_CARD'].includes(d.type)
         );
         if (identityDocs.length >= 2) {
-          await api.patch(`/api/applications/${applicationId}/update/`, {
+          await api.patch(`/api/applicant/applications/${applicationId}/update/`, {
             status: 'IDENTITY_DOCS_UPLOADED',
           });
         }
       } else if (category === 'education') {
-        const eduDocs = documents.filter(d => 
+        const eduDocs = documents.filter(d =>
           ['BSC_CERT', 'BSC_TRANSCRIPT'].includes(d.type)
         );
         if (eduDocs.length >= 2) {
-          await api.patch(`/api/applications/${applicationId}/update/`, {
+          await api.patch(`/api/applicant/applications/${applicationId}/update/`, {
             status: 'EDU_DOCS_UPLOADED',
           });
         }

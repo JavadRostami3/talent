@@ -23,7 +23,7 @@ const Deficiencies = () => {
 
   const fetchDeficiencies = async () => {
     try {
-      const response = await api.get('/api/applications/');
+      const response = await api.get('/api/applicant/applications/');
       const application = response.data.results[0];
       
       if (application?.deficiencies) {

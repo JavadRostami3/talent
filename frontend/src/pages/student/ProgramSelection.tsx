@@ -103,7 +103,7 @@ const ProgramSelection = () => {
       setLoading(true);
       
       // Get application
-      const appResponse = await api.get('/api/applications/');
+      const appResponse = await api.get('/api/applicant/applications/');
       const application = appResponse.data.results[0];
       setApplicationId(application.id);
       setRoundType(application.round_type);
@@ -130,9 +130,9 @@ const ProgramSelection = () => {
       
       // Fetch faculties, departments, programs
       const [facultiesRes, departmentsRes, programsRes] = await Promise.all([
-        api.get('/api/core/faculties/'),
-        api.get('/api/core/departments/'),
-        api.get('/api/programs/', {
+        api.get('/api/public/faculties/'),
+        api.get('/api/public/departments/'),
+        api.get('/api/public/programs/', {
           params: { round_type: application.round_type }
         }),
       ]);
@@ -155,12 +155,12 @@ const ProgramSelection = () => {
 
   const filterPrograms = () => {
     let filtered = [...programs];
-    
-    if (selectedFaculty) {
+
+    if (selectedFaculty && selectedFaculty !== 'all') {
       filtered = filtered.filter(p => p.faculty.id.toString() === selectedFaculty);
     }
-    
-    if (selectedDepartment) {
+
+    if (selectedDepartment && selectedDepartment !== 'all') {
       filtered = filtered.filter(p => p.department.id.toString() === selectedDepartment);
     }
     
@@ -232,7 +232,7 @@ const ProgramSelection = () => {
     try {
       setSaving(true);
       
-      await api.post(`/api/applications/${applicationId}/choices/`, {
+      await api.post(`/api/applicant/applications/${applicationId}/choices/`, {
         choices: validChoices.map((c, idx) => ({
           program_id: c.program_id,
           priority: idx + 1,
@@ -268,7 +268,7 @@ const ProgramSelection = () => {
   }
 
   const availableDepartments = departments.filter(
-    d => !selectedFaculty || d.faculty.toString() === selectedFaculty
+    d => !selectedFaculty || selectedFaculty === 'all' || d.faculty.toString() === selectedFaculty
   );
 
   return (

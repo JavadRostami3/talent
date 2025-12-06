@@ -16,7 +16,7 @@ const ApplicationStatus = () => {
 
   const fetchApplicationStatus = async () => {
     try {
-      const response = await api.get('/api/applications/');
+      const response = await api.get('/api/applicant/applications/');
       if (response.data.results && response.data.results.length > 0) {
         setApplication(response.data.results[0]);
       }

@@ -9,20 +9,30 @@ export const formatNationalId = (nationalId: string): string => {
 
 export const getStatusLabel = (status: string): string => {
   const labels: Record<string, string> = {
-    draft: 'پیش‌نویس',
-    under_review: 'در حال بررسی',
-    defective: 'نقص دارد',
-    approved: 'تأیید شده',
+    DRAFT: 'پیش‌نویس',
+    SUBMITTED: 'ارسال شده',
+    UNDER_UNIVERSITY_REVIEW: 'در حال بررسی دانشگاه',
+    UNDER_FACULTY_REVIEW: 'در حال بررسی دانشکده',
+    RETURNED_FOR_CORRECTION: 'بازگشت برای اصلاح',
+    APPROVED_BY_UNIVERSITY: 'تأیید توسط دانشگاه',
+    REJECTED_BY_UNIVERSITY: 'رد توسط دانشگاه',
+    APPROVED: 'تأیید شده',
+    REJECTED: 'رد شده',
   };
   return labels[status] || status;
 };
 
 export const getStatusColor = (status: string): string => {
   const colors: Record<string, string> = {
-    draft: 'bg-status-draft text-status-draft-foreground',
-    under_review: 'bg-status-review text-status-review-foreground',
-    defective: 'bg-status-defective text-status-defective-foreground',
-    approved: 'bg-status-approved text-status-approved-foreground',
+    DRAFT: 'bg-status-draft text-status-draft-foreground',
+    SUBMITTED: 'bg-status-review text-status-review-foreground',
+    UNDER_UNIVERSITY_REVIEW: 'bg-status-review text-status-review-foreground',
+    UNDER_FACULTY_REVIEW: 'bg-status-review text-status-review-foreground',
+    RETURNED_FOR_CORRECTION: 'bg-status-defective text-status-defective-foreground',
+    APPROVED_BY_UNIVERSITY: 'bg-status-approved text-status-approved-foreground',
+    REJECTED_BY_UNIVERSITY: 'bg-status-defective text-status-defective-foreground',
+    APPROVED: 'bg-status-approved text-status-approved-foreground',
+    REJECTED: 'bg-status-defective text-status-defective-foreground',
   };
   return colors[status] || '';
 };
