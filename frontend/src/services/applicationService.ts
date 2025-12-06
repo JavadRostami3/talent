@@ -23,6 +23,7 @@ import type {
   EducationRecord,
   EducationRecordCreateRequest,
   ResearchRecord,
+  ResearchRecordType,
   ResearchRecordCreateRequest,
   ApplicationDocument,
   PaginatedResponse,
@@ -251,13 +252,13 @@ export const deleteEducationRecord = async (
 // ============================================
 
 /**
- * دریافت تمام سوابق پژوهشی یک پرونده (Unified)
+ * دریافت تمام سوابق پژوهشی یک پرونده
  */
 export const getResearchRecords = async (
   applicationId: number
-): Promise<UnifiedResearchResponse> => {
-  const response = await api.get<UnifiedResearchResponse>(
-    `/api/applications/${applicationId}/research/`
+): Promise<ResearchRecord[]> => {
+  const response = await api.get<ResearchRecord[]>(
+    `/api/applications/${applicationId}/research-records/`
   );
   return response.data;
 };
@@ -277,28 +278,35 @@ export const getResearchRecordById = async (
 
 /**
  * افزودن سابقه پژوهشی جدید
+ * Backend API: POST /api/applications/{id}/research-records/create/
+ * Body: {type: string, data: object}
  */
 export const addResearchRecord = async (
   applicationId: number,
   data: ResearchRecordCreateRequest
 ): Promise<ResearchRecord> => {
-  const response = await api.post<ResearchRecord>(
-    `/api/applications/${applicationId}/research/`,
+  const response = await api.post<{ message: string; record_id: number; type: string }>(
+    `/api/applications/${applicationId}/research-records/create/`,
     data
   );
-  return response.data;
+  
+  // بازگشت سابقه جدید
+  const recordId = response.data.record_id;
+  return await getResearchRecordById(applicationId, recordId);
 };
 
 /**
  * ویرایش سابقه پژوهشی
+ * Backend API: PUT /api/applications/{id}/research-records/{type}/{record_id}/
  */
 export const updateResearchRecord = async (
   applicationId: number,
+  type: ResearchRecordType,
   recordId: number,
-  data: Partial<ResearchRecordCreateRequest>
+  data: Record<string, unknown>
 ): Promise<ResearchRecord> => {
-  const response = await api.patch<ResearchRecord>(
-    `/api/applications/${applicationId}/research/${recordId}/`,
+  const response = await api.put<ResearchRecord>(
+    `/api/applications/${applicationId}/research-records/${type.toLowerCase()}/${recordId}/`,
     data
   );
   return response.data;
@@ -306,12 +314,14 @@ export const updateResearchRecord = async (
 
 /**
  * حذف سابقه پژوهشی
+ * Backend API: DELETE /api/applications/{id}/research-records/{type}/{record_id}/
  */
 export const deleteResearchRecord = async (
   applicationId: number,
+  type: ResearchRecordType,
   recordId: number
 ): Promise<void> => {
-  await api.delete(`/api/applications/${applicationId}/research/${recordId}/`);
+  await api.delete(`/api/applications/${applicationId}/research-records/${type.toLowerCase()}/${recordId}/`);
 };
 
 // ============================================
@@ -718,15 +728,20 @@ const applicationService = {
   submitApplication,
   deleteApplication,
   
-  // Choices
+  // Choices (Program Selection)
   getApplicationChoices,
+  getChoices: getApplicationChoices, // Alias
   addApplicationChoice,
+  createChoice: addApplicationChoice, // Alias
   updateApplicationChoice,
+  updateChoice: updateApplicationChoice, // Alias
   deleteApplicationChoice,
+  deleteChoice: deleteApplicationChoice, // Alias
   
   // Education
   getEducationRecords,
   addEducationRecord,
+  createEducationRecord: addEducationRecord, // Alias
   updateEducationRecord,
   deleteEducationRecord,
   
@@ -734,6 +749,7 @@ const applicationService = {
   getResearchRecords,
   getResearchRecordById,
   addResearchRecord,
+  createResearchRecord: addResearchRecord, // Alias
   updateResearchRecord,
   deleteResearchRecord,
   

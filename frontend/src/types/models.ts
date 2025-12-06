@@ -91,6 +91,27 @@ export const DegreeLevelDisplay: Record<DegreeLevel, string> = {
 };
 
 /**
+ * Education Status - وضعیت تحصیلی
+ */
+export type EducationStatus = 'STUDYING' | 'GRADUATED';
+
+export const EducationStatusDisplay: Record<EducationStatus, string> = {
+  STUDYING: 'در حال تحصیل',
+  GRADUATED: 'فارغ‌التحصیل'
+};
+
+/**
+ * Rank Status - وضعیت رتبه
+ */
+export type RankStatus = 'TOP_TEN_PERCENT' | 'TOP_TWENTY_FIVE_PERCENT' | 'OTHER';
+
+export const RankStatusDisplay: Record<RankStatus, string> = {
+  TOP_TEN_PERCENT: '10٪ برتر',
+  TOP_TWENTY_FIVE_PERCENT: '25٪ برتر',
+  OTHER: 'سایر'
+};
+
+/**
  * Gender - جنسیت
  */
 export type Gender = 'MALE' | 'FEMALE';
@@ -127,17 +148,20 @@ export type DocumentType =
   | 'NATIONAL_ID'
   | 'ID_CARD'
   | 'BIRTH_CERTIFICATE'
-  | 'PHOTO'
-  | 'BSC_CERT'
   | 'BSC_TRANSCRIPT'
+  | 'BSC_CERTIFICATE'
   | 'TRANSCRIPT'
   | 'DEGREE'
   | 'MSC_CERT'
   | 'MSC_TRANSCRIPT'
+  | 'MSC_CERTIFICATE'
   | 'MSC_THESIS'
   | 'MSC_EXCELLENCE_CERT'
   | 'OLYMPIAD_CERT'
-  | 'LANGUAGE_CERT'
+  | 'LANGUAGE_CERTIFICATE'
+  | 'RECOMMENDATION_LETTER'
+  | 'RESEARCH_PROPOSAL'
+  | 'WORK_EXPERIENCE'
   | 'RESEARCH_ARTICLE'
   | 'PATENT_DOC'
   | 'FESTIVAL_AWARD_DOC'
@@ -353,12 +377,15 @@ export interface ApplicationChoice {
   department_name?: string;
   priority: number;
   // فیلدهای نتیجه پذیرش (از Backend)
-  admission_status?: AdmissionStatus;
+  admission_status?: AdmissionStatus | string | null;
   admission_status_display?: string;
   admission_priority_result?: number;
   admission_note?: string;
   created_at: string;
 }
+
+// Alias برای سازگاری
+export type Choice = ApplicationChoice;
 
 /**
  * Education Record - سوابق تحصیلی
@@ -368,17 +395,19 @@ export interface EducationRecord {
   application: number;
   degree_level: DegreeLevel;
   degree_level_display?: string;
-  university: University | number;
+  university: University;
   university_id?: number;
   university_name?: string;
   field_of_study: string;
   gpa: number;
+  start_date?: string;
   start_month?: number;
   start_year?: number;
   entrance_year?: number;
+  end_date?: string;
   graduation_month?: number;
   graduation_year?: number;
-  status?: 'STUDYING' | 'GRADUATED';
+  status?: EducationStatus;
   status_display?: string;
   // فیلدهای امتیازدهی
   education_score?: number;
@@ -387,7 +416,7 @@ export interface EducationRecord {
   total_units_passed?: number;
   semester_count?: number;
   class_size?: number;
-  rank_status?: string;
+  rank_status?: RankStatus;
   created_at: string;
   updated_at: string;
 }
@@ -399,11 +428,11 @@ export interface ApplicationDocument {
   id: number;
   application: number;
   doc_type?: DocumentType;
-  document_type?: string;
+  document_type?: DocumentType;
   type_display?: string;
   file: string;
   file_url?: string;
-  file_name: string;
+  file_name?: string;
   file_size?: number;
   status?: 'UPLOADED' | 'APPROVED' | 'REJECTED';
   uploaded_at: string;
@@ -412,6 +441,9 @@ export interface ApplicationDocument {
   is_approved?: boolean;
   review_comment?: string;
 }
+
+// Alias برای سازگاری
+export type DocumentRecord = ApplicationDocument;
 
 /**
  * Application - پرونده ثبت‌نام
@@ -544,26 +576,12 @@ export interface DocumentReview {
 // ============================================
 
 /**
- * Base Research Record Interface
- * 
- * تمام سوابق پژوهشی این interface پایه را گسترش می‌دهند
- */
-interface BaseResearchRecord {
-  id: number;
-  application: number;
-  score: number;
-  file?: string;
-  reviewed_by?: string;
-  review_comment?: string;
-  created_at: string;
-  updated_at?: string;
-}
-
-/**
  * Article - مقاله
  */
-export interface Article extends BaseResearchRecord {
+export interface Article {
   type: 'ARTICLE';
+  id: number;
+  application: number;
   article_type: ArticleType;
   title_fa: string;
   title_en?: string;
@@ -574,62 +592,102 @@ export interface Article extends BaseResearchRecord {
   authors: string;
   impact_factor?: number;
   citation_count?: number;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
  * Patent - اختراع
  */
-export interface Patent extends BaseResearchRecord {
+export interface Patent {
   type: 'PATENT';
+  id: number;
+  application: number;
   title_fa: string;
   patent_number: string;
   registration_date: string;
   inventors: string;
   description?: string;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
  * Book - کتاب
  */
-export interface Book extends BaseResearchRecord {
+export interface Book {
   type: 'BOOK';
+  id: number;
+  application: number;
   title_fa: string;
   book_type: BookType;
   publisher: string;
   isbn?: string;
   publish_year: number;
   authors_or_translators: string;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
  * Conference - کنفرانس
  */
-export interface Conference extends BaseResearchRecord {
+export interface Conference {
   type: 'CONFERENCE';
+  id: number;
+  application: number;
   title_fa: string;
   title_en?: string;
   conference_name: string;
   conference_type: ConferenceType;
   year: number;
   authors: string;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
  * Festival Award - جایزه جشنواره
  */
-export interface FestivalAward extends BaseResearchRecord {
+export interface FestivalAward {
   type: 'FESTIVAL_AWARD';
+  id: number;
+  application: number;
   festival_name: string;
   award_title: string;
   year: number;
   description?: string;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
  * Masters Thesis - پایان‌نامه ارشد
  */
-export interface MastersThesis extends BaseResearchRecord {
+export interface MastersThesis {
   type: 'MASTERS_THESIS';
+  id: number;
+  application: number;
   title_fa: string;
   grade: number;
   defense_date: string;
@@ -637,6 +695,12 @@ export interface MastersThesis extends BaseResearchRecord {
   second_supervisor?: string;
   advisor_1?: string;
   advisor_2?: string;
+  score?: number;
+  score_comment?: string;
+  reviewed_by?: string;
+  review_comment?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 /**
