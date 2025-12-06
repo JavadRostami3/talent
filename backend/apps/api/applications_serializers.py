@@ -4,7 +4,9 @@ Serializers for applications app
 from rest_framework import serializers
 from apps.applications.models import (
     Application, ApplicationChoice, ApplicationEducationRecord,
-    RegistrationPayment
+    RegistrationPayment,
+    ResearchArticle, Patent, FestivalAward, ConferenceArticle, Book,
+    MastersThesis, OlympiadRecord, LanguageCertificate, Interview
 )
 from apps.api.admissions_serializers import ProgramListSerializer
 from apps.api.core_serializers import UniversitySerializer
@@ -77,6 +79,115 @@ class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
             serializer = PhDEducationRecordSerializer(instance, context=self.context)
         
         return serializer.data
+
+
+class ApplicationChoiceSerializer(serializers.ModelSerializer):
+    """Serializer for ApplicationChoice model"""
+    program = ProgramListSerializer(read_only=True)
+    program_id = serializers.IntegerField(write_only=True)
+    admission_status_display = serializers.CharField(source='get_admission_status_display', read_only=True)
+    
+    class Meta:
+        model = ApplicationChoice
+        fields = [
+            'id', 'application', 'program', 'program_id', 'priority',
+            'admission_status', 'admission_status_display',
+            'admission_priority_result', 'admission_note'
+        ]
+        read_only_fields = ['id', 'admission_status', 'admission_priority_result', 'admission_note']
+
+
+class ResearchArticleSerializer(serializers.ModelSerializer):
+    """Serializer برای مقالات پژوهشی"""
+    article_type_display = serializers.CharField(source='get_article_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = ResearchArticle
+        fields = ['id', 'title_fa', 'title_en', 'journal_name', 'issn', 
+                  'article_type', 'article_type_display', 'status', 'status_display',
+                  'publish_date', 'authors', 'link', 'record_code', 'score']
+
+
+class PatentSerializer(serializers.ModelSerializer):
+    """Serializer برای ثبت اختراعات"""
+    class Meta:
+        model = Patent
+        fields = ['id', 'title_fa', 'title_en', 'patent_number', 
+                  'registration_date', 'inventors', 'score']
+
+
+class FestivalAwardSerializer(serializers.ModelSerializer):
+    """Serializer برای جوایز جشنواره"""
+    class Meta:
+        model = FestivalAward
+        fields = ['id', 'festival_name', 'award_title', 'year', 
+                  'description', 'score']
+
+
+class ConferenceArticleSerializer(serializers.ModelSerializer):
+    """Serializer برای مقالات کنفرانس"""
+    conference_type_display = serializers.CharField(source='get_conference_type_display', read_only=True)
+    
+    class Meta:
+        model = ConferenceArticle
+        fields = ['id', 'title_fa', 'title_en', 'conference_name', 
+                  'conference_type', 'conference_type_display', 'year', 
+                  'authors', 'score']
+
+
+class BookSerializer(serializers.ModelSerializer):
+    """Serializer برای کتاب‌ها"""
+    book_type_display = serializers.CharField(source='get_book_type_display', read_only=True)
+    
+    class Meta:
+        model = Book
+        fields = ['id', 'title_fa', 'title_en', 'book_type', 'book_type_display',
+                  'publisher', 'isbn', 'publish_year', 'authors_or_translators', 'score']
+
+
+class MastersThesisSerializer(serializers.ModelSerializer):
+    """Serializer برای پایان‌نامه ارشد"""
+    class Meta:
+        model = MastersThesis
+        fields = ['id', 'title_fa', 'title_en', 'grade', 'defense_date',
+                  'main_supervisor', 'second_supervisor', 'advisor_1', 'advisor_2', 'score']
+
+
+class OlympiadRecordSerializer(serializers.ModelSerializer):
+    """Serializer برای سوابق المپیاد"""
+    olympiad_type_display = serializers.CharField(source='get_olympiad_type_display', read_only=True)
+    rank_level_display = serializers.CharField(source='get_rank_level_display', read_only=True)
+    
+    class Meta:
+        model = OlympiadRecord
+        fields = ['id', 'olympiad_type', 'olympiad_type_display', 'olympiad_name',
+                  'year', 'rank_level', 'rank_level_display', 'rank_number']
+
+
+class LanguageCertificateSerializer(serializers.ModelSerializer):
+    """Serializer برای مدارک زبان"""
+    language_display = serializers.CharField(source='get_language_display', read_only=True)
+    certificate_type_display = serializers.CharField(source='get_certificate_type_display', read_only=True)
+    
+    class Meta:
+        model = LanguageCertificate
+        fields = ['id', 'language', 'language_display', 'certificate_type', 
+                  'certificate_type_display', 'certificate_number', 'issue_date', 
+                  'expiry_date', 'test_score']
+
+
+class InterviewSerializer(serializers.ModelSerializer):
+    """Serializer برای مصاحبه"""
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = Interview
+        fields = ['id', 'scheduled_date', 'location', 'status', 'status_display',
+                  'experience_analysis_score', 'creativity_score', 
+                  'personality_expression_score', 'documentation_score',
+                  'speech_success_probability_score', 'lab_alignment_score',
+                  'total_interview_score', 'interviewer_comment', 'conducted_at']
 
 
 class ApplicationChoiceSerializer(serializers.ModelSerializer):
@@ -228,6 +339,21 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
     choices = ApplicationChoiceSerializer(many=True, read_only=True)
     education_records = ApplicationEducationRecordSerializer(many=True, read_only=True)
     
+    # سوابق تحقیقاتی (برای دکتری)
+    research_articles = ResearchArticleSerializer(many=True, read_only=True)
+    patents = PatentSerializer(many=True, read_only=True)
+    festival_awards = FestivalAwardSerializer(many=True, read_only=True)
+    conference_articles = ConferenceArticleSerializer(many=True, read_only=True)
+    books = BookSerializer(many=True, read_only=True)
+    masters_thesis = MastersThesisSerializer(read_only=True)
+    
+    # سوابق المپیاد و زبان
+    olympiad_records = OlympiadRecordSerializer(many=True, read_only=True)
+    language_certificates = LanguageCertificateSerializer(many=True, read_only=True)
+    
+    # مصاحبه
+    interview = InterviewSerializer(read_only=True)
+    
     class Meta:
         model = Application
         fields = [
@@ -240,7 +366,14 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
             'faculty_review_completed', 'faculty_reviewed_by', 'faculty_reviewed_at',
             'admission_overall_status', 'admission_result_published_at',
             'created_at', 'updated_at',
-            'choices', 'education_records'
+            'choices', 'education_records',
+            # سوابق تحقیقاتی
+            'research_articles', 'patents', 'festival_awards', 'conference_articles',
+            'books', 'masters_thesis',
+            # سوابق المپیاد و زبان
+            'olympiad_records', 'language_certificates',
+            # مصاحبه
+            'interview'
         ]
         read_only_fields = [
             'id', 'tracking_code', 'total_score', 'score_calculated_at',

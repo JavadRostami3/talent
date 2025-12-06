@@ -11,7 +11,8 @@ from apps.api.accounts_serializers import (
     UserSerializer,
     ApplicantProfileSerializer,
     AdminPermissionSerializer,
-    AdminPermissionCreateUpdateSerializer
+    AdminPermissionCreateUpdateSerializer,
+    ProfileUpdateSerializer
 )
 
 
@@ -36,6 +37,27 @@ def current_user_profile(request):
     }
     
     return Response(profile_data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    """
+    ویرایش پروفایل کاربر فعلی
+    فیلدهای قابل ویرایش: father_name, birth_certificate_*, mobile, birth_year, birth_place, gender, military_status
+    فیلدهای غیرقابل ویرایش: national_id, first_name, last_name, email
+    """
+    user = request.user
+    
+    serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        # بازگشت اطلاعات کامل کاربر
+        user_serializer = UserSerializer(user)
+        return Response(user_serializer.data)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminPermissionViewSet(viewsets.ModelViewSet):

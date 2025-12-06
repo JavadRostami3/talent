@@ -22,12 +22,40 @@ class UserSerializer(serializers.ModelSerializer):
             # وضعیت نظام وظیفه
             'military_status', 'military_status_display'
         ]
-        read_only_fields = ['id', 'role']
+        # کد ملی پس از ثبت‌نام غیرقابل تغییر است
+        read_only_fields = ['id', 'national_id', 'role']
     
     def validate(self, data):
         """اعتبارسنجی: اگر جنسیت مرد است، وضعیت نظام وظیفه الزامی است"""
         gender = data.get('gender', self.instance.gender if self.instance else None)
         military_status = data.get('military_status')
+        
+        if gender == 'MALE' and not military_status:
+            raise serializers.ValidationError({
+                'military_status': 'وضعیت نظام وظیفه برای مردان الزامی است'
+            })
+        
+        return data
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer برای ویرایش محدود پروفایل کاربر"""
+    
+    class Meta:
+        model = User
+        fields = [
+            'father_name',
+            'birth_certificate_number', 'birth_certificate_serial',
+            'birth_certificate_issue_place',
+            'mobile',
+            'birth_year', 'birth_place',
+            'gender', 'military_status'
+        ]
+    
+    def validate(self, data):
+        """اعتبارسنجی: اگر جنسیت مرد است، وضعیت نظام وظیفه الزامی است"""
+        gender = data.get('gender', self.instance.gender if self.instance else None)
+        military_status = data.get('military_status', self.instance.military_status if self.instance else None)
         
         if gender == 'MALE' and not military_status:
             raise serializers.ValidationError({

@@ -56,7 +56,19 @@ def university_admin_applications_list(request):
         'faculty_reviewed_by'
     ).prefetch_related(
         'choices__program__faculty',
-        'choices__program__department'
+        'choices__program__department',
+        # سوابق تحقیقاتی
+        'research_articles',
+        'patents',
+        'festival_awards',
+        'conference_articles',
+        'books',
+        'masters_thesis',
+        # سوابق المپیاد و زبان
+        'olympiad_records',
+        'language_certificates',
+        # مصاحبه
+        'interview'
     )
     
     # فیلتر نوع فراخوان بر اساس دسترسی
@@ -192,7 +204,19 @@ def faculty_admin_applications_list(request):
     ).prefetch_related(
         'choices__program__faculty',
         'choices__program__department',
-        'education_records'
+        'education_records',
+        # سوابق تحقیقاتی
+        'research_articles',
+        'patents',
+        'festival_awards',
+        'conference_articles',
+        'books',
+        'masters_thesis',
+        # سوابق المپیاد و زبان
+        'olympiad_records',
+        'language_certificates',
+        # مصاحبه
+        'interview'
     ).filter(
         status__in=[
             Application.Status.APPROVED_BY_UNIVERSITY,
@@ -459,8 +483,28 @@ def faculty_review_application(request, application_id):
         # TODO: ذخیره امتیازهای دستی در مدل مرتبط
         pass
     
+    # تعیین نتیجه نهایی پذیرش
+    if decision == 'APPROVED':
+        application.admission_overall_status = 'ADMITTED'
+        # تعیین وضعیت انتخاب‌ها
+        accepted_choice = application.choices.filter(
+            program__faculty__in=admin_permission.faculties.all()
+        ).order_by('priority').first()
+        
+        if accepted_choice:
+            accepted_choice.admission_status = 'ACCEPTED'
+            accepted_choice.admission_priority_result = accepted_choice.priority
+            accepted_choice.save()
+            # بقیه رد می‌شوند
+            application.choices.exclude(id=accepted_choice.id).update(admission_status='REJECTED')
+    else:
+        application.admission_overall_status = 'REJECTED'
+        application.choices.update(admission_status='REJECTED')
+    
+    application.admission_result_published_at = timezone.now()
+    
     # تغییر وضعیت پرونده
-    application.status = Application.Status.FACULTY_REVIEW_COMPLETED
+    application.status = Application.Status.COMPLETED
     application.save()
     
     serializer = ApplicationDetailSerializer(application)

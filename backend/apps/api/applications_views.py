@@ -156,10 +156,26 @@ def submit_application(request, application_id):
             if not application.education_records.filter(degree_level='MSC').exists():
                 errors.append('اطلاعات تحصیلی کارشناسی ارشد الزامی است')
         
-        # Check education documents
-        edu_docs = application.documents.filter(type__in=['BSC_CERT', 'BSC_TRANSCRIPT'])
-        if edu_docs.count() < 2:
-            errors.append('مدارک تحصیلی کارشناسی کامل نیست')
+        # Check education documents - بسته به وضعیت تحصیلی
+        bsc_record = application.education_records.filter(degree_level='BSC').first()
+        if bsc_record:
+            if bsc_record.status == 'GRADUATED':
+                # فارغ‌التحصیل: باید مدرک + ریزنمرات داشته باشد
+                required_docs = ['BSC_CERT', 'BSC_TRANSCRIPT']
+                required_count = 2
+            else:
+                # درحال تحصیل: فقط ریزنمرات کافیست
+                required_docs = ['BSC_TRANSCRIPT', 'ENROLLMENT_CERT']
+                required_count = 1
+            
+            edu_docs = application.documents.filter(type__in=required_docs)
+            if edu_docs.count() < required_count:
+                if bsc_record.status == 'GRADUATED':
+                    errors.append('مدارک تحصیلی کارشناسی کامل نیست (مدرک فراغت + ریزنمرات)')
+                else:
+                    errors.append('مدارک تحصیلی کارشناسی کامل نیست (ریزنمرات)')
+        else:
+            errors.append('اطلاعات تحصیلی کارشناسی الزامی است')
         
         if errors:
             return Response(
@@ -201,6 +217,13 @@ def manage_choices(request, application_id):
             return Response(serializer.data)
         
         elif request.method == 'POST':
+            # بررسی محدودیت تعداد انتخاب‌ها (حداکثر 3 رشته)
+            if application.choices.count() >= 3:
+                return Response(
+                    {'error': 'حداکثر 3 انتخاب رشته مجاز است'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
             # Add new choice
             serializer = ApplicationChoiceSerializer(data=request.data)
             if serializer.is_valid():
