@@ -112,6 +112,12 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
     resolver: zodResolver(researchSchema),
   });
 
+  // Helper برای دسترسی type-safe به errors
+  const getError = (field: string) => {
+    const err = (errors as any)[field];
+    return err ? String(err.message || '') : '';
+  };
+
   useEffect(() => {
     fetchRecords();
   }, []);
@@ -143,9 +149,10 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
     setEditingRecord(record);
     
     // پر کردن فرم با داده‌های موجود
+    const { type, id, application, created_at, updated_at, score, score_comment, reviewed_by, review_comment, ...recordData } = record as any;
     reset({
       type: record.type,
-      ...record.data,
+      ...recordData,
     } as any);
   };
 
@@ -237,7 +244,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
   };
 
   const renderRecordSummary = (record: ResearchRecord) => {
-    const data = record.data;
+    const data = record as any;
     
     switch (record.type) {
       case 'ARTICLE':
@@ -370,13 +377,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2">
                     <Label>عنوان فارسی <span className="text-red-500">*</span></Label>
                     <Input {...register('title_fa')} disabled={loading} />
-                    {errors.title_fa && <p className="text-sm text-red-600">{errors.title_fa.message}</p>}
+                    {(errors as any).title_fa && <p className="text-sm text-red-600">{String((errors as any).title_fa.message || '')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>عنوان انگلیسی <span className="text-red-500">*</span></Label>
                     <Input {...register('title_en')} dir="ltr" disabled={loading} />
-                    {errors.title_en && <p className="text-sm text-red-600">{errors.title_en.message}</p>}
+                    {(errors as any).title_en && <p className="text-sm text-red-600">{String((errors as any).title_en.message || '')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -396,13 +403,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                         <SelectItem value="PROMOTIONAL_INTERNATIONAL">علمی-ترویجی (بین‌المللی)</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.article_type && <p className="text-sm text-red-600">{errors.article_type.message}</p>}
+                    {getError('article_type') && <p className="text-sm text-red-600">{getError('article_type')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>نام نشریه <span className="text-red-500">*</span></Label>
                     <Input {...register('journal_name')} disabled={loading} />
-                    {errors.journal_name && <p className="text-sm text-red-600">{errors.journal_name.message}</p>}
+                    {getError('journal_name') && <p className="text-sm text-red-600">{getError('journal_name')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -418,7 +425,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                       placeholder="1402"
                       disabled={loading}
                     />
-                    {errors.publish_year && <p className="text-sm text-red-600">{errors.publish_year.message}</p>}
+                    {getError('publish_year') && <p className="text-sm text-red-600">{getError('publish_year')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -442,7 +449,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2 md:col-span-2">
                     <Label>نام نویسندگان <span className="text-red-500">*</span></Label>
                     <Input {...register('authors')} placeholder="نویسنده 1، نویسنده 2، ..." disabled={loading} />
-                    {errors.authors && <p className="text-sm text-red-600">{errors.authors.message}</p>}
+                    {getError('authors') && <p className="text-sm text-red-600">{getError('authors')}</p>}
                   </div>
                 </div>
               </>
@@ -455,25 +462,25 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2 md:col-span-2">
                     <Label>عنوان اختراع <span className="text-red-500">*</span></Label>
                     <Input {...register('title_fa')} disabled={loading} />
-                    {errors.title_fa && <p className="text-sm text-red-600">{errors.title_fa.message}</p>}
+                    {getError('title_fa') && <p className="text-sm text-red-600">{getError('title_fa')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>شماره ثبت <span className="text-red-500">*</span></Label>
                     <Input {...register('patent_number')} disabled={loading} />
-                    {errors.patent_number && <p className="text-sm text-red-600">{errors.patent_number.message}</p>}
+                    {getError('patent_number') && <p className="text-sm text-red-600">{getError('patent_number')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>تاریخ ثبت <span className="text-red-500">*</span></Label>
                     <Input {...register('registration_date')} placeholder="1402/09/15" disabled={loading} />
-                    {errors.registration_date && <p className="text-sm text-red-600">{errors.registration_date.message}</p>}
+                    {getError('registration_date') && <p className="text-sm text-red-600">{getError('registration_date')}</p>}
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
                     <Label>نام مخترعان <span className="text-red-500">*</span></Label>
                     <Input {...register('inventors')} placeholder="مخترع 1، مخترع 2، ..." disabled={loading} />
-                    {errors.inventors && <p className="text-sm text-red-600">{errors.inventors.message}</p>}
+                    {getError('inventors') && <p className="text-sm text-red-600">{getError('inventors')}</p>}
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
@@ -491,7 +498,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2 md:col-span-2">
                     <Label>عنوان کتاب <span className="text-red-500">*</span></Label>
                     <Input {...register('title_fa')} disabled={loading} />
-                    {errors.title_fa && <p className="text-sm text-red-600">{errors.title_fa.message}</p>}
+                    {getError('title_fa') && <p className="text-sm text-red-600">{getError('title_fa')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -509,13 +516,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                         <SelectItem value="TRANSLATION">ترجمه</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.book_type && <p className="text-sm text-red-600">{errors.book_type.message}</p>}
+                    {getError('book_type') && <p className="text-sm text-red-600">{getError('book_type')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>ناشر <span className="text-red-500">*</span></Label>
                     <Input {...register('publisher')} disabled={loading} />
-                    {errors.publisher && <p className="text-sm text-red-600">{errors.publisher.message}</p>}
+                    {getError('publisher') && <p className="text-sm text-red-600">{getError('publisher')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -531,13 +538,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                       placeholder="1402"
                       disabled={loading}
                     />
-                    {errors.publish_year && <p className="text-sm text-red-600">{errors.publish_year.message}</p>}
+                    {getError('publish_year') && <p className="text-sm text-red-600">{getError('publish_year')}</p>}
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
                     <Label>نویسندگان/مترجمان <span className="text-red-500">*</span></Label>
                     <Input {...register('authors_or_translators')} disabled={loading} />
-                    {errors.authors_or_translators && <p className="text-sm text-red-600">{errors.authors_or_translators.message}</p>}
+                    {getError('authors_or_translators') && <p className="text-sm text-red-600">{getError('authors_or_translators')}</p>}
                   </div>
                 </div>
               </>
@@ -550,19 +557,19 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2">
                     <Label>عنوان فارسی <span className="text-red-500">*</span></Label>
                     <Input {...register('title_fa')} disabled={loading} />
-                    {errors.title_fa && <p className="text-sm text-red-600">{errors.title_fa.message}</p>}
+                    {getError('title_fa') && <p className="text-sm text-red-600">{getError('title_fa')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>عنوان انگلیسی <span className="text-red-500">*</span></Label>
                     <Input {...register('title_en')} dir="ltr" disabled={loading} />
-                    {errors.title_en && <p className="text-sm text-red-600">{errors.title_en.message}</p>}
+                    {getError('title_en') && <p className="text-sm text-red-600">{getError('title_en')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>نام کنفرانس <span className="text-red-500">*</span></Label>
                     <Input {...register('conference_name')} disabled={loading} />
-                    {errors.conference_name && <p className="text-sm text-red-600">{errors.conference_name.message}</p>}
+                    {getError('conference_name') && <p className="text-sm text-red-600">{getError('conference_name')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -580,7 +587,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                         <SelectItem value="INTERNATIONAL">خارجی</SelectItem>
                       </SelectContent>
                     </Select>
-                    {errors.conference_type && <p className="text-sm text-red-600">{errors.conference_type.message}</p>}
+                    {getError('conference_type') && <p className="text-sm text-red-600">{getError('conference_type')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -591,13 +598,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                       placeholder="1402"
                       disabled={loading}
                     />
-                    {errors.year && <p className="text-sm text-red-600">{errors.year.message}</p>}
+                    {getError('year') && <p className="text-sm text-red-600">{getError('year')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>نام نویسندگان <span className="text-red-500">*</span></Label>
                     <Input {...register('authors')} disabled={loading} />
-                    {errors.authors && <p className="text-sm text-red-600">{errors.authors.message}</p>}
+                    {getError('authors') && <p className="text-sm text-red-600">{getError('authors')}</p>}
                   </div>
                 </div>
               </>
@@ -610,13 +617,13 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2">
                     <Label>نام جشنواره <span className="text-red-500">*</span></Label>
                     <Input {...register('festival_name')} disabled={loading} />
-                    {errors.festival_name && <p className="text-sm text-red-600">{errors.festival_name.message}</p>}
+                    {getError('festival_name') && <p className="text-sm text-red-600">{getError('festival_name')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>عنوان جایزه <span className="text-red-500">*</span></Label>
                     <Input {...register('award_title')} placeholder="رتبه اول، مدال طلا، ..." disabled={loading} />
-                    {errors.award_title && <p className="text-sm text-red-600">{errors.award_title.message}</p>}
+                    {getError('award_title') && <p className="text-sm text-red-600">{getError('award_title')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -627,7 +634,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                       placeholder="1402"
                       disabled={loading}
                     />
-                    {errors.year && <p className="text-sm text-red-600">{errors.year.message}</p>}
+                    {getError('year') && <p className="text-sm text-red-600">{getError('year')}</p>}
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
@@ -645,7 +652,7 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                   <div className="space-y-2 md:col-span-2">
                     <Label>عنوان پایان‌نامه <span className="text-red-500">*</span></Label>
                     <Input {...register('title_fa')} disabled={loading} />
-                    {errors.title_fa && <p className="text-sm text-red-600">{errors.title_fa.message}</p>}
+                    {getError('title_fa') && <p className="text-sm text-red-600">{getError('title_fa')}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -657,19 +664,19 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
                       placeholder="19.50"
                       disabled={loading}
                     />
-                    {errors.grade && <p className="text-sm text-red-600">{errors.grade.message}</p>}
+                    {getError('grade') && <p className="text-sm text-red-600">{getError('grade')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>تاریخ دفاع <span className="text-red-500">*</span></Label>
                     <Input {...register('defense_date')} placeholder="1402/06/15" disabled={loading} />
-                    {errors.defense_date && <p className="text-sm text-red-600">{errors.defense_date.message}</p>}
+                    {getError('defense_date') && <p className="text-sm text-red-600">{getError('defense_date')}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label>استاد راهنمای اول <span className="text-red-500">*</span></Label>
                     <Input {...register('main_supervisor')} disabled={loading} />
-                    {errors.main_supervisor && <p className="text-sm text-red-600">{errors.main_supervisor.message}</p>}
+                    {getError('main_supervisor') && <p className="text-sm text-red-600">{getError('main_supervisor')}</p>}
                   </div>
 
                   <div className="space-y-2">

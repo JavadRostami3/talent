@@ -95,10 +95,3 @@ const RegistrationWizard = () => {
 };
 
 export default RegistrationWizard;
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default RegistrationWizard;

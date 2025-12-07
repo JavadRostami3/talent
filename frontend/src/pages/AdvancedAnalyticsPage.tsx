@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { TrendingUp, Users, FileText, CheckCircle, Calendar } from 'lucide-react';
-import api from '@/lib/api';
+import api from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface AnalyticsData {

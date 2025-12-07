@@ -200,23 +200,24 @@ const StudentLayout = () => {
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{studentProfile.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{studentProfile.email}</p>
-                  {application?.tracking_code && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      کد پیگیری: {application.tracking_code}
-                    </p>
-                  )}
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="ml-2 h-4 w-4" />
-                  خروج
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{studentProfile.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{studentProfile.email}</p>
+                    {application?.tracking_code && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        کد پیگیری: {application.tracking_code}
+                      </p>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="ml-2 h-4 w-4" />
+                    خروج
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>

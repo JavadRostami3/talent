@@ -134,7 +134,7 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
       if (existing) {
         await applicationService.updateEducationRecord(applicationId, existing.id, data);
       } else {
-        await applicationService.createEducationRecord(applicationId, data);
+        await applicationService.createEducationRecord(applicationId, data as any);
       }
 
       toast({
@@ -261,7 +261,7 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
 
               {existing && !isEditing && (
                 <div className="text-sm space-y-1 text-muted-foreground">
-                  <p><strong>دانشگاه:</strong> {existing.university.name_fa}</p>
+                  <p><strong>دانشگاه:</strong> {existing.university.name}</p>
                   <p><strong>رشته:</strong> {existing.field_of_study}</p>
                   <p><strong>معدل:</strong> {existing.gpa}</p>
                   <p><strong>وضعیت:</strong> {existing.status === 'GRADUATED' ? 'فارغ‌التحصیل' : 'در حال تحصیل'}</p>
@@ -287,7 +287,7 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
                         <SelectContent>
                           {universities.map(univ => (
                             <SelectItem key={univ.id} value={univ.id.toString()}>
-                              {univ.name_fa}
+                              {univ.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

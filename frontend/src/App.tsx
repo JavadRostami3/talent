@@ -83,12 +83,39 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   return <>{children}</>;
 };
 
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated && user) {
+    // Redirect authenticated users to their dashboard
+    if (user.role === 'APPLICANT') {
+      return <Navigate to="/student" replace />;
+    }
+    if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN'].includes(user.role)) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+  }
+
+  return <>{children}</>;
+};
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/admin/login" element={<AdminLogin />} />
-    <Route path="/register" element={<Register />} />
+    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+    <Route path="/admin/login" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
     <Route path="/announcements" element={<Announcements />} />
     
     {/* Notifications - Available for all authenticated users */}

@@ -60,9 +60,33 @@ const AdminLayout = () => {
       const response = await api.get<AdminProfile>('/api/admin/profile/');
       setAdminProfile(response.data);
     } catch (error) {
+      // Fallback: ایجاد یک پروفایل موقت برای تست
+      console.error('Admin profile API error:', error);
+      setAdminProfile({
+        id: 1,
+        national_id: '0000000000',
+        first_name: 'ادمین',
+        last_name: 'سیستم',
+        full_name: 'ادمین سیستم',
+        email: 'admin@example.com',
+        mobile: '09000000000',
+        role: 'ADMIN',
+        role_display: 'مدیر سیستم',
+        permissions: {
+          has_full_access: true,
+          has_ma_talent_access: true,
+          has_phd_talent_access: true,
+          has_phd_exam_access: true,
+          has_olympiad_access: true,
+        },
+        accessible_round_types: ['MA_TALENT', 'PHD_TALENT', 'PHD_EXAM', 'OLYMPIAD'],
+        faculties: [],
+        has_all_faculties_access: true,
+      });
+      
       toast({
-        title: 'خطا',
-        description: 'دریافت اطلاعات کاربری با خطا مواجه شد',
+        title: 'هشدار',
+        description: 'از داده‌های موقت استفاده می‌شود - Backend را اجرا کنید',
         variant: 'destructive',
       });
     }
@@ -257,35 +281,36 @@ const AdminLayout = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(adminProfile.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block text-right">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {getInitials(adminProfile.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block text-right">
+                      <p className="text-sm font-medium">{adminProfile.full_name}</p>
+                      <p className="text-xs text-muted-foreground">{adminProfile.role_display}</p>
+                    </div>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-2">
                     <p className="text-sm font-medium">{adminProfile.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{adminProfile.role_display}</p>
+                    <p className="text-xs text-muted-foreground">{adminProfile.email}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{adminProfile.role_display}</p>
                   </div>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-2">
-                  <p className="text-sm font-medium">{adminProfile.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{adminProfile.email}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{adminProfile.role_display}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
-                  <Settings className="ml-2 h-4 w-4" />
-                  تنظیمات
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut className="ml-2 h-4 w-4" />
-                  خروج
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
+                    <Settings className="ml-2 h-4 w-4" />
+                    تنظیمات
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="ml-2 h-4 w-4" />
+                    خروج
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 

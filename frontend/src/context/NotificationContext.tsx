@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import notificationService from '@/services/notificationService';
 import type { Notification, NotificationStats } from '@/types/notification';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -39,6 +40,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
   autoRefreshInterval = 30000,
 }) => {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -191,15 +193,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     }
   }, [loading, hasMore, fetchNotifications]);
 
-  // Initial load
+  // Initial load - only if authenticated
   useEffect(() => {
-    fetchNotifications(true);
-    refreshStats();
-  }, []);
+    if (isAuthenticated) {
+      fetchNotifications(true);
+      refreshStats();
+    }
+  }, [isAuthenticated]);
 
-  // Auto-refresh
+  // Auto-refresh - only if authenticated
   useEffect(() => {
-    if (autoRefreshInterval > 0) {
+    if (isAuthenticated && autoRefreshInterval > 0) {
       const interval = setInterval(() => {
         refreshStats();
         // Optionally refresh first page of notifications
@@ -208,7 +212,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
       return () => clearInterval(interval);
     }
-  }, [autoRefreshInterval, refreshStats, fetchNotifications]);
+  }, [isAuthenticated, autoRefreshInterval, refreshStats, fetchNotifications]);
 
   const value: NotificationContextType = {
     notifications,
