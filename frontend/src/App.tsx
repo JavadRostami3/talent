@@ -43,6 +43,8 @@ import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import WorkflowManagementPage from "./pages/WorkflowManagementPage";
 import WorkflowEditorPage from "./pages/WorkflowEditorPage";
 import WorkflowExecutionsPage from "./pages/WorkflowExecutionsPage";
+import AuditLogsPage from "./pages/AuditLogsPage";
+import ActivityTimelinePage from "./pages/ActivityTimelinePage";
 import NotFound from "./pages/NotFound";
 import { NotificationProvider } from "./context/NotificationContext";
 
@@ -159,6 +161,10 @@ const AppRoutes = () => (
       <Route path="workflows/new" element={<WorkflowEditorPage />} />
       <Route path="workflows/:id" element={<WorkflowEditorPage />} />
       <Route path="workflows/:id/executions" element={<WorkflowExecutionsPage />} />
+      
+      {/* Audit Logs & Activity */}
+      <Route path="audit/logs" element={<AuditLogsPage />} />
+      <Route path="audit/timeline" element={<ActivityTimelinePage />} />
       
       {/* Support */}
       <Route path="support" element={<div className="p-8"><h1 className="text-2xl font-bold">پشتیبانی</h1></div>} />
