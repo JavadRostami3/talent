@@ -29,9 +29,11 @@ def register_initial(request):
     serializer = UserRegistrationSerializer(data=request.data)
     
     if not serializer.is_valid():
+        print(f"Validation errors: {serializer.errors}")  # Debug log
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     data = serializer.validated_data
+    print(f"Validated data: {data}")  # Debug log
     
     try:
         with transaction.atomic():

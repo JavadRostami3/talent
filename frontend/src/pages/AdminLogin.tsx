@@ -99,16 +99,18 @@ const AdminLogin = () => {
       <Card className="w-full max-w-md shadow-lg border-slate-200 dark:border-slate-800">
         <CardHeader className="text-center space-y-4 pb-6">
           <div className="flex justify-center">
-            <div className="bg-slate-900 dark:bg-slate-100 p-3 rounded-xl">
-              <Shield className="h-10 w-10 text-slate-50 dark:text-slate-900" />
-            </div>
+            <img 
+              src="/umz-logo.png" 
+              alt="دانشگاه مازندران" 
+              className="h-20 w-20 object-contain"
+            />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-              پنل مدیریت
+              پنل مدیریت - دانشگاه مازندران
             </CardTitle>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-              ورود همکاران و پرسنل
+              سامانه ثبت‌نام و مصاحبه - ورود همکاران و پرسنل
             </p>
           </div>
         </CardHeader>

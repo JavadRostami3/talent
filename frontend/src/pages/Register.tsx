@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, Check, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { validateNationalId } from '@/utils/helpers';
@@ -343,6 +344,31 @@ const Register = () => {
                 <p className="text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
+          </div>
+
+          {/* نوع فراخوان */}
+          <div className="space-y-2">
+            <Label htmlFor="round_type" className="text-sm text-slate-700 dark:text-slate-300">
+              نوع فراخوان <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={preFilledData?.roundType}
+              onValueChange={(value) => setValue('round_type', value as RoundType)}
+              disabled={!!preFilledData?.roundType}
+            >
+              <SelectTrigger className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                <SelectValue placeholder="نوع فراخوان را انتخاب کنید" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MA_TALENT">استعداد درخشان کارشناسی ارشد</SelectItem>
+                <SelectItem value="PHD_TALENT">استعداد درخشان دکتری</SelectItem>
+                <SelectItem value="PHD_EXAM">آزمون دکتری</SelectItem>
+                <SelectItem value="OLYMPIAD">المپیاد</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.round_type && (
+              <p className="text-sm text-red-500">{errors.round_type.message}</p>
+            )}
           </div>
 
           {/* دکمه ثبت‌نام */}

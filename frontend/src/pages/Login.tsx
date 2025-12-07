@@ -75,13 +75,15 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="bg-primary p-4 rounded-2xl">
-              <GraduationCap className="h-12 w-12 text-primary-foreground" />
-            </div>
+            <img 
+              src="/umz-logo.png" 
+              alt="دانشگاه مازندران" 
+              className="h-20 w-20 object-contain"
+            />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">سامانه ثبت‌نام دانشجویان مستعد</CardTitle>
-            <CardDescription className="text-base mt-2">دانشگاه علوم پزشکی</CardDescription>
+            <CardTitle className="text-2xl font-bold">سامانه ثبت‌نام و مصاحبه</CardTitle>
+            <CardDescription className="text-base mt-2">دانشگاه مازندران</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

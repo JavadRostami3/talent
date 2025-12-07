@@ -11,12 +11,14 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img 
+              src="/umz-logo.png" 
+              alt="دانشگاه مازندران" 
+              className="h-12 w-12 object-contain"
+            />
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold text-foreground">سامانه ثبت‌نام دانشجویان مستعد</h1>
-              <p className="text-xs text-muted-foreground">دانشگاه علوم پزشکی</p>
+              <h1 className="text-lg font-bold text-foreground">سامانه ثبت‌نام و مصاحبه</h1>
+              <p className="text-xs text-muted-foreground">دانشگاه مازندران</p>
             </div>
           </Link>
 

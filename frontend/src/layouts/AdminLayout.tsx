@@ -220,12 +220,14 @@ const AdminLayout = () => {
               </button>
               
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="h-6 w-6 text-primary" />
-                </div>
+                <img 
+                  src="/umz-logo.png" 
+                  alt="دانشگاه مازندران" 
+                  className="h-12 w-12 object-contain"
+                />
                 <div className="hidden sm:block">
-                  <h1 className="text-lg font-bold text-gray-900">سامانه ثبت نام و معاونت</h1>
-                  <p className="text-xs text-gray-500">دانشگاه زنجان</p>
+                  <h1 className="text-lg font-bold text-gray-900">سامانه ثبت‌نام و مصاحبه</h1>
+                  <p className="text-xs text-gray-500">دانشگاه مازندران</p>
                 </div>
               </div>
             </div>
@@ -381,7 +383,7 @@ const AdminLayout = () => {
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} دانشگاه زنجان. تمامی حقوق محفوظ است.
+            © {new Date().getFullYear()} دانشگاه مازندران. تمامی حقوق محفوظ است.
           </p>
         </div>
       </footer>

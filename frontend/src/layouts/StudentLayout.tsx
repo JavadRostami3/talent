@@ -166,9 +166,11 @@ const StudentLayout = () => {
               </button>
               
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Building className="h-6 w-6 text-primary" />
-                </div>
+                <img 
+                  src="/umz-logo.png" 
+                  alt="دانشگاه مازندران" 
+                  className="h-12 w-12 object-contain"
+                />
                 <div className="hidden sm:block">
                   <h1 className="text-lg font-bold text-gray-900">سامانه ثبت‌نام و مصاحبه</h1>
                   <p className="text-xs text-gray-500">دانشگاه مازندران</p>

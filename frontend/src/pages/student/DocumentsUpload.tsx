@@ -42,10 +42,7 @@ const DocumentsUpload = () => {
     education: [
       { type: 'BSC_CERT', label: 'مدرک کارشناسی', required: true },
       { type: 'BSC_TRANSCRIPT', label: 'ریزنمرات کارشناسی', required: true },
-      { type: 'EXCELLENCE_CERT', label: 'گواهی دانشجو ممتاز', required: false },
-      { type: 'MSC_CERT', label: 'مدرک کارشناسی ارشد', required: false },
-      { type: 'MSC_TRANSCRIPT', label: 'ریزنمرات ارشد', required: false },
-      { type: 'MSC_EXCELLENCE_CERT', label: 'فرم رتبه ممتاز ارشد', required: false },
+      { type: 'BSC_EXCELLENCE_CERT', label: 'گواهی رتبه ممتاز کارشناسی', required: true },
     ],
   };
 

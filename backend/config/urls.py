@@ -8,8 +8,8 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # تنظیمات Admin
-admin.site.site_header = "پنل مدیریت سامانه ثبت‌نام تحصیلات تکمیلی"
-admin.site.site_title = "سامانه ثبت‌نام"
+admin.site.site_header = "پنل مدیریت سامانه ثبت‌نام و مصاحبه - دانشگاه مازندران"
+admin.site.site_title = "سامانه ثبت‌نام و مصاحبه"
 admin.site.index_title = "مدیریت سامانه"
 
 urlpatterns = [

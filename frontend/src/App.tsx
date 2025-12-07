@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import Register from "./pages/Register";
 import Announcements from "./pages/Announcements";
-import StudentDashboard from "./pages/student/Dashboard";
+import StudentDashboard from "./pages/student/StudentDashboard";
 import RegistrationWizard from "./pages/student/RegistrationWizard";
 import PersonalInfo from "./pages/student/PersonalInfo";
 import DocumentsUpload from "./pages/student/DocumentsUpload";
@@ -132,6 +132,7 @@ const AppRoutes = () => (
       }
     >
       <Route index element={<StudentDashboard />} />
+      <Route path="dashboard" element={<StudentDashboard />} />
       <Route path="wizard" element={<RegistrationWizard />} />
       <Route path="program-selection" element={<ProgramSelection />} />
       <Route path="personal-info" element={<PersonalInfo />} />
@@ -140,6 +141,13 @@ const AppRoutes = () => (
       <Route path="submit" element={<SubmitApplication />} />
       <Route path="deficiencies" element={<Deficiencies />} />
       <Route path="status" element={<ApplicationStatus />} />
+      
+      {/* PhD-specific routes */}
+      <Route path="phd/documents/education" element={<div>PhD Education Documents Page - Coming Soon</div>} />
+      <Route path="phd/research-records" element={<div>PhD Research Records Page - Coming Soon</div>} />
+      <Route path="phd/olympiad-language" element={<div>PhD Olympiad & Language Page - Coming Soon</div>} />
+      <Route path="phd/education/bsc" element={<div>PhD BSC Education Page - Coming Soon</div>} />
+      <Route path="phd/education/msc" element={<div>PhD MSC Education Page - Coming Soon</div>} />
     </Route>
 
     {/* Admin Routes with new Layout */}
