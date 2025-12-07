@@ -40,6 +40,9 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import BulkEmailPage from "./pages/admin/BulkEmailPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotificationSettingsPage from "./pages/NotificationSettingsPage";
+import WorkflowManagementPage from "./pages/WorkflowManagementPage";
+import WorkflowEditorPage from "./pages/WorkflowEditorPage";
+import WorkflowExecutionsPage from "./pages/WorkflowExecutionsPage";
 import NotFound from "./pages/NotFound";
 import { NotificationProvider } from "./context/NotificationContext";
 
@@ -150,6 +153,12 @@ const AppRoutes = () => (
       
       {/* Bulk Actions */}
       <Route path="bulk-email" element={<BulkEmailPage />} />
+      
+      {/* Workflow Automation */}
+      <Route path="workflows" element={<WorkflowManagementPage />} />
+      <Route path="workflows/new" element={<WorkflowEditorPage />} />
+      <Route path="workflows/:id" element={<WorkflowEditorPage />} />
+      <Route path="workflows/:id/executions" element={<WorkflowExecutionsPage />} />
       
       {/* Support */}
       <Route path="support" element={<div className="p-8"><h1 className="text-2xl font-bold">پشتیبانی</h1></div>} />

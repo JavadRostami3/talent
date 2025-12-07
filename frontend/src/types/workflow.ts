@@ -140,3 +140,17 @@ export interface CreateWorkflowRuleRequest {
 }
 
 export interface UpdateWorkflowRuleRequest extends Partial<CreateWorkflowRuleRequest> {}
+
+export interface PaginatedWorkflowRules {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: WorkflowRule[];
+}
+
+export interface PaginatedWorkflowExecutions {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: WorkflowExecution[];
+}
