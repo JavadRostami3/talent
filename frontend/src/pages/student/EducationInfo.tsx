@@ -196,7 +196,7 @@ const EducationInfo = () => {
         description: 'اطلاعات تحصیلی با موفقیت ذخیره شد',
       });
       
-      navigate('/student');
+      navigate('..');
     } catch (error: unknown) {
       console.error('Error saving:', error);
       const errorMessage = error && typeof error === 'object' && 'response' in error 
@@ -594,7 +594,7 @@ const EducationInfo = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/student')}
+            onClick={() => navigate('..')}
             disabled={saving}
           >
             انصراف

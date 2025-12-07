@@ -9,13 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap, LogIn } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { validateNationalId } from '@/utils/helpers';
 
 const loginSchema = z.object({
   nationalId: z
     .string()
-    .length(10, 'کد ملی باید ۱۰ رقم باشد')
-    .refine((val) => validateNationalId(val), 'کد ملی نامعتبر است'),
+    .length(10, 'کد ملی باید ۱۰ رقم باشد'),
   trackingCode: z
     .string()
     .min(1, 'کد پیگیری الزامی است')
@@ -58,7 +56,8 @@ const Login = () => {
         description: 'ورود با موفقیت انجام شد',
       });
       
-      navigate('/student/dashboard');
+      // هدایت به صفحه اصلی که به صورت هوشمند به پنل مناسب ریدایرکت می‌کند
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'خطا در ورود',

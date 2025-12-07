@@ -9,7 +9,8 @@ import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import Register from "./pages/Register";
 import Announcements from "./pages/Announcements";
-import StudentDashboard from "./pages/student/StudentDashboard";
+import Dashboard from "./pages/student/Dashboard";
+import PhdDashboard from "./pages/student/PhdDashboard";
 import RegistrationWizard from "./pages/student/RegistrationWizard";
 import PersonalInfo from "./pages/student/PersonalInfo";
 import DocumentsUpload from "./pages/student/DocumentsUpload";
@@ -18,7 +19,14 @@ import SubmitApplication from "./pages/student/SubmitApplication";
 import Deficiencies from "./pages/student/Deficiencies";
 import ApplicationStatus from "./pages/student/ApplicationStatus";
 import ProgramSelection from "./pages/student/ProgramSelection";
+import ResearchRecordsPage from "./pages/student/phd/ResearchRecordsPage";
+import PhdEducationDocuments from "./pages/student/phd/PhdEducationDocuments";
+import PhdEducationPage from "./pages/student/phd/PhdEducationPage";
+import ScoresOverview from "./pages/student/phd/ScoresOverview";
+import OlympiadLanguagePage from "./pages/student/phd/OlympiadLanguagePage";
 import StudentLayout from "./layouts/StudentLayout";
+import RouteGuard from "./components/RouteGuard";
+import ApplicantRedirect from "./components/ApplicantRedirect";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ApplicationReview from "./pages/admin/ApplicationReview";
@@ -72,7 +80,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
     // Redirect based on user role
     if (user.role === 'APPLICANT') {
-      return <Navigate to="/student" replace />;
+      return <Navigate to="/" replace />;
     }
     if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN'].includes(user.role)) {
       return <Navigate to="/admin" replace />;
@@ -100,7 +108,8 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   if (isAuthenticated && user) {
     // Redirect authenticated users to their dashboard
     if (user.role === 'APPLICANT') {
-      return <Navigate to="/student" replace />;
+      // به صفحه اصلی هدایت می‌شود، آنجا تشخیص می‌دهد کدام پنل را نشان دهد
+      return <Navigate to="/" replace />;
     }
     if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN'].includes(user.role)) {
       return <Navigate to="/admin/dashboard" replace />;
@@ -110,29 +119,45 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-    <Route path="/admin/login" element={<PublicRoute><AdminLogin /></PublicRoute>} />
-    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-    <Route path="/announcements" element={<Announcements />} />
+const AppRoutes = () => {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  return (
+    <Routes>
+      {/* Home - تشخیص هوشمند و هدایت به پنل مناسب */}
+      <Route 
+        path="/" 
+        element={
+          loading ? (
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : isAuthenticated && user?.role === 'APPLICANT' ? (
+            <ApplicantRedirect />
+          ) : (
+            <Index />
+          )
+        } 
+      />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/admin/login" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/announcements" element={<Announcements />} />
     
     {/* Notifications - Available for all authenticated users */}
     <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
     <Route path="/notifications/settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
     
-    {/* Student Routes with Layout */}
+    {/* Masters Routes - پنل متقاضیان ارشد */}
     <Route
-      path="/student"
+      path="/masters"
       element={
-        <ProtectedRoute allowedRoles={['APPLICANT']}>
+        <RouteGuard allowedRoundTypes={['MA_TALENT', 'OLYMPIAD']}>
           <StudentLayout />
-        </ProtectedRoute>
+        </RouteGuard>
       }
     >
-      <Route index element={<StudentDashboard />} />
-      <Route path="dashboard" element={<StudentDashboard />} />
+      <Route index element={<Dashboard />} />
       <Route path="wizard" element={<RegistrationWizard />} />
       <Route path="program-selection" element={<ProgramSelection />} />
       <Route path="personal-info" element={<PersonalInfo />} />
@@ -141,13 +166,38 @@ const AppRoutes = () => (
       <Route path="submit" element={<SubmitApplication />} />
       <Route path="deficiencies" element={<Deficiencies />} />
       <Route path="status" element={<ApplicationStatus />} />
+    </Route>
+
+    {/* PhD Routes - پنل متقاضیان دکتری */}
+    <Route
+      path="/phd"
+      element={
+        <RouteGuard allowedRoundTypes={['PHD_TALENT', 'PHD_EXAM']}>
+          <StudentLayout />
+        </RouteGuard>
+      }
+    >
+      <Route index element={<PhdDashboard />} />
+      <Route path="wizard" element={<RegistrationWizard />} />
+      <Route path="personal-info" element={<PersonalInfo />} />
+      <Route path="program-selection" element={<ProgramSelection />} />
       
-      {/* PhD-specific routes */}
-      <Route path="phd/documents/education" element={<div>PhD Education Documents Page - Coming Soon</div>} />
-      <Route path="phd/research-records" element={<div>PhD Research Records Page - Coming Soon</div>} />
-      <Route path="phd/olympiad-language" element={<div>PhD Olympiad & Language Page - Coming Soon</div>} />
-      <Route path="phd/education/bsc" element={<div>PhD BSC Education Page - Coming Soon</div>} />
-      <Route path="phd/education/msc" element={<div>PhD MSC Education Page - Coming Soon</div>} />
+      {/* Combined BSC + MSC Education with Scoring */}
+      <Route path="education" element={<PhdEducationPage />} />
+      
+      {/* Scores Overview */}
+      <Route path="scores" element={<ScoresOverview />} />
+      
+      {/* Research Records */}
+      <Route path="research-records" element={<ResearchRecordsPage />} />
+      
+      {/* Olympiad & Language */}
+      <Route path="olympiad-language" element={<OlympiadLanguagePage />} />
+      
+      {/* Common routes */}
+      <Route path="submit" element={<SubmitApplication />} />
+      <Route path="deficiencies" element={<Deficiencies />} />
+      <Route path="status" element={<ApplicationStatus />} />
     </Route>
 
     {/* Admin Routes with new Layout */}
@@ -210,8 +260,9 @@ const AppRoutes = () => (
     </Route>
 
     <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+    </Routes>
+  );
+};
 
 const App = () => {
   // Simple error boundary

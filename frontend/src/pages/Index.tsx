@@ -86,7 +86,8 @@ const Index = () => {
       if (user.role === 'UNIVERSITY_ADMIN' || user.role === 'FACULTY_ADMIN' || user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
         navigate('/admin');
       } else {
-        navigate('/student');
+        // هدایت به صفحه اصلی که به صورت هوشمند redirect می‌کند
+        navigate('/');
       }
     } else {
       fetchAnnouncements();

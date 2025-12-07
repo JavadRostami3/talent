@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Upload, Trash2, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileUpload } from '@/components/ui/file-upload';
 import applicationService from '@/services/applicationService';
 import type { DocumentRecord, DocumentType } from '@/types/models';
 

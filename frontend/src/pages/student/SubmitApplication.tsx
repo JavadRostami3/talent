@@ -16,22 +16,23 @@ const SubmitApplication = () => {
       setSubmitting(true);
       
       // Get application
-      const response = await api.get('/api/applicant/applications/');
-      const applicationId = response.data.results[0]?.id;
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      const applicationId = applications[0]?.id;
       
       if (!applicationId) {
         throw new Error('Application not found');
       }
 
       // Submit
-      await api.post(`/api/applicant/applications/${applicationId}/submit/`);
+      await api.post(`/api/applications/${applicationId}/submit/`);
       
       toast({
         title: 'موفق',
         description: 'درخواست شما با موفقیت برای بررسی ارسال شد',
       });
       
-      navigate('/student');
+      navigate('..');
     } catch (error: any) {
       toast({
         title: 'خطا',
@@ -101,13 +102,6 @@ const SubmitApplication = () => {
       </Card>
 
       <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/student')}
-          disabled={submitting}
-        >
-          بازگشت
-        </Button>
         <Button onClick={handleSubmit} disabled={submitting} size="lg">
           {submitting ? (
             <>

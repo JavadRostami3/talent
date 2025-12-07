@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
 import { Upload, FileText, CheckCircle2, X, AlertCircle } from 'lucide-react';
+import { FileUpload } from '@/components/ui/file-upload';
 import api from '@/services/api';
 
 interface Document {
@@ -32,6 +33,8 @@ const DocumentsUpload = () => {
   const [applicationId, setApplicationId] = useState<number | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadingType, setUploadingType] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File | null }>({});
 
   const documentTypes: { [key: string]: DocumentType[] } = {
     identity: [
@@ -63,11 +66,11 @@ const DocumentsUpload = () => {
     }
   };
 
-  const handleFileUpload = async (type: string, file: File) => {
-    if (!applicationId) {
+  const handleFileUpload = async (type: string, file: File | null) => {
+    if (!file || !applicationId) {
       toast({
         title: 'خطا',
-        description: 'ابتدا باید درخواست خود را ایجاد کنید',
+        description: 'لطفاً ابتدا فایلی انتخاب کنید',
         variant: 'destructive',
       });
       return;
@@ -79,6 +82,7 @@ const DocumentsUpload = () => {
     formData.append('file', file);
 
     try {
+      setUploadingType(type);
       setUploadProgress({ ...uploadProgress, [type]: 0 });
 
       const response = await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
@@ -94,6 +98,7 @@ const DocumentsUpload = () => {
       });
 
       setDocuments([...documents, response.data]);
+      setSelectedFiles({ ...selectedFiles, [type]: null });
       
       toast({
         title: 'موفق',
@@ -122,9 +127,6 @@ const DocumentsUpload = () => {
       }
 
       setUploadProgress({ ...uploadProgress, [type]: 100 });
-      setTimeout(() => {
-        setUploadProgress({ ...uploadProgress, [type]: 0 });
-      }, 2000);
 
     } catch (error) {
       toast({
@@ -133,7 +135,21 @@ const DocumentsUpload = () => {
         variant: 'destructive',
       });
       setUploadProgress({ ...uploadProgress, [type]: 0 });
+    } finally {
+      setUploadingType(null);
     }
+  };
+
+  const handleFileSelect = (type: string, file: File | null) => {
+    if (file && file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'خطا',
+        description: 'حجم فایل نباید بیشتر از 5MB باشد',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSelectedFiles({ ...selectedFiles, [type]: file });
   };
 
   const handleDelete = async (docId: number) => {
@@ -179,82 +195,27 @@ const DocumentsUpload = () => {
           {currentDocTypes.map((docType) => {
             const uploaded = hasDocument(docType.type);
             const progress = uploadProgress[docType.type] || 0;
+            const doc = documents.find(d => d.type === docType.type);
 
             return (
-              <div key={docType.type} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <h4 className="font-medium">{docType.label}</h4>
-                      {!docType.required && (
-                        <span className="text-xs text-muted-foreground">(اختیاری)</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {uploaded ? (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const doc = documents.find(d => d.type === docType.type);
-                          if (doc) handleDelete(doc.id);
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Label
-                      htmlFor={`file-${docType.type}`}
-                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                    >
-                      <Upload className="h-4 w-4" />
-                      آپلود
-                      <Input
-                        id={`file-${docType.type}`}
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast({
-                                title: 'خطا',
-                                description: 'حجم فایل نباید بیشتر از 5MB باشد',
-                                variant: 'destructive',
-                              });
-                              return;
-                            }
-                            handleFileUpload(docType.type, file);
-                          }
-                        }}
-                      />
-                    </Label>
-                  )}
-                </div>
-
-                {progress > 0 && progress < 100 && (
-                  <div className="space-y-1">
-                    <Progress value={progress} className="h-2" />
-                    <p className="text-xs text-muted-foreground text-center">
-                      در حال آپلود... {progress}%
-                    </p>
-                  </div>
-                )}
-              </div>
+              <FileUpload
+                key={docType.type}
+                label={`${docType.label}${!docType.required ? ' (اختیاری)' : ''}`}
+                uploaded={uploaded}
+                uploading={uploadingType === docType.type}
+                uploadProgress={progress}
+                fileName={selectedFiles[docType.type]?.name || doc?.file}
+                onFileSelect={(file) => handleFileSelect(docType.type, file)}
+                onUpload={() => handleFileUpload(docType.type, selectedFiles[docType.type])}
+                onRemove={() => {
+                  if (doc) handleDelete(doc.id);
+                }}
+              />
             );
           })}
 
           <div className="flex gap-4 justify-end pt-4 border-t">
-            <Button variant="outline" onClick={() => navigate('/student')}>
-              بازگشت به داشبورد
-            </Button>
-            <Button onClick={() => navigate('/student')}>
+            <Button onClick={() => navigate('..')}>
               <CheckCircle2 className="ml-2 h-4 w-4" />
               تایید و ادامه
             </Button>

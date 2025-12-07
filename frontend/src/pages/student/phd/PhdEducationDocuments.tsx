@@ -46,9 +46,10 @@ const PhdEducationDocuments = () => {
 
   const fetchApplication = async () => {
     try {
-      const response = await api.get('/api/applicant/applications/');
-      if (response.data.results && response.data.results.length > 0) {
-        const app = response.data.results[0];
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        const app = applications[0];
         setApplicationId(app.id);
         setDocuments(app.documents || []);
       }
@@ -319,9 +320,6 @@ const PhdEducationDocuments = () => {
 
       {/* Navigation Buttons */}
       <div className="flex gap-4">
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          بازگشت
-        </Button>
         <Button 
           onClick={() => navigate('/student')}
           disabled={completionPercentage < 100}

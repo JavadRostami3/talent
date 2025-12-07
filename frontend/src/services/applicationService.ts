@@ -252,26 +252,14 @@ export const deleteEducationRecord = async (
 // ============================================
 
 /**
- * دریافت تمام سوابق پژوهشی یک پرونده
+ * دریافت سوابق پژوهشی
+ * Backend returns: {total_records, total_score, summary, records: [...]}
  */
 export const getResearchRecords = async (
   applicationId: number
-): Promise<ResearchRecord[]> => {
-  const response = await api.get<ResearchRecord[]>(
+): Promise<any> => {
+  const response = await api.get(
     `/api/applications/${applicationId}/research-records/`
-  );
-  return response.data;
-};
-
-/**
- * دریافت یک سابقه پژوهشی خاص
- */
-export const getResearchRecordById = async (
-  applicationId: number,
-  recordId: number
-): Promise<ResearchRecord> => {
-  const response = await api.get<ResearchRecord>(
-    `/api/applications/${applicationId}/research/${recordId}/`
   );
   return response.data;
 };
@@ -280,33 +268,45 @@ export const getResearchRecordById = async (
  * افزودن سابقه پژوهشی جدید
  * Backend API: POST /api/applications/{id}/research-records/create/
  * Body: {type: string, data: object}
+ * Returns: {id: number, type: string, message: string, ...}
  */
 export const addResearchRecord = async (
   applicationId: number,
   data: ResearchRecordCreateRequest
-): Promise<ResearchRecord> => {
-  const response = await api.post<{ message: string; record_id: number; type: string }>(
+): Promise<any> => {
+  const response = await api.post(
     `/api/applications/${applicationId}/research-records/create/`,
     data
   );
-  
-  // بازگشت سابقه جدید
-  const recordId = response.data.record_id;
-  return await getResearchRecordById(applicationId, recordId);
+  return response.data;
 };
 
 /**
  * ویرایش سابقه پژوهشی
  * Backend API: PUT /api/applications/{id}/research-records/{type}/{record_id}/
+ * Note: type must be lowercase (article, patent, etc.) and mapped correctly
  */
 export const updateResearchRecord = async (
   applicationId: number,
   type: ResearchRecordType,
   recordId: number,
   data: Record<string, unknown>
-): Promise<ResearchRecord> => {
-  const response = await api.put<ResearchRecord>(
-    `/api/applications/${applicationId}/research-records/${type.toLowerCase()}/${recordId}/`,
+): Promise<any> => {
+  // Map type to backend format
+  const typeMap: Record<string, string> = {
+    'ARTICLE': 'article',
+    'PROMOTIONAL_ARTICLE': 'promotional_article',
+    'PATENT': 'patent',
+    'FESTIVAL_AWARD': 'award',
+    'CONFERENCE': 'conference',
+    'BOOK': 'book',
+    'MASTERS_THESIS': 'thesis'
+  };
+  
+  const backendType = typeMap[type] || type.toLowerCase();
+  
+  const response = await api.put(
+    `/api/applications/${applicationId}/research-records/${backendType}/${recordId}/`,
     data
   );
   return response.data;
@@ -321,7 +321,20 @@ export const deleteResearchRecord = async (
   type: ResearchRecordType,
   recordId: number
 ): Promise<void> => {
-  await api.delete(`/api/applications/${applicationId}/research-records/${type.toLowerCase()}/${recordId}/`);
+  // Map type to backend format
+  const typeMap: Record<string, string> = {
+    'ARTICLE': 'article',
+    'PROMOTIONAL_ARTICLE': 'promotional_article',
+    'PATENT': 'patent',
+    'FESTIVAL_AWARD': 'award',
+    'CONFERENCE': 'conference',
+    'BOOK': 'book',
+    'MASTERS_THESIS': 'thesis'
+  };
+  
+  const backendType = typeMap[type] || type.toLowerCase();
+  
+  await api.delete(`/api/applications/${applicationId}/research-records/${backendType}/${recordId}/`);
 };
 
 // ============================================
@@ -747,7 +760,6 @@ const applicationService = {
   
   // Research
   getResearchRecords,
-  getResearchRecordById,
   addResearchRecord,
   createResearchRecord: addResearchRecord, // Alias
   updateResearchRecord,

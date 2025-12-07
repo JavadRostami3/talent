@@ -101,8 +101,8 @@ def register_initial(request):
 @permission_classes([AllowAny])
 def login_applicant(request):
     """
-    ورود داوطلب به سامانه
-    POST: national_id, tracking_code, captcha (optional)
+    ورود داوطلب یا مدیر به سامانه
+    POST: national_id + (tracking_code OR password)
     Returns: access, refresh tokens
     """
     serializer = UserLoginSerializer(data=request.data)
@@ -111,34 +111,80 @@ def login_applicant(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     data = serializer.validated_data
+    national_id = data['national_id']
+    tracking_code = data.get('tracking_code')
+    password = data.get('password')
     
     try:
         # Find user
-        user = User.objects.get(national_id=data['national_id'])
+        user = User.objects.get(national_id=national_id)
         
-        # Find application with tracking code
-        profile = user.profile
-        application = Application.objects.get(
-            applicant=profile,
-            tracking_code=data['tracking_code']
-        )
-        
-        # Generate tokens
-        refresh = RefreshToken.for_user(user)
-        
-        return Response({
-            'message': 'ورود موفقیت‌آمیز',
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-            'user': {
-                'id': user.id,
-                'national_id': user.national_id,
-                'full_name': user.get_full_name(),
-                'role': user.role
-            },
-            'application_id': application.id,
-            'tracking_code': application.tracking_code
-        }, status=status.HTTP_200_OK)
+        # تشخیص نوع لاگین
+        if password:
+            # ورود مدیر با رمز عبور
+            if not user.check_password(password):
+                return Response(
+                    {'error': 'رمز عبور نادرست است'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # بررسی نقش کاربر
+            if user.role == 'APPLICANT':
+                return Response(
+                    {'error': 'دسترسی غیرمجاز. لطفاً از صفحه ورود دانشجویان استفاده کنید.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            if not user.is_staff:
+                return Response(
+                    {'error': 'دسترسی محدود. لطفاً با پشتیبانی تماس بگیرید.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Generate tokens for admin
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'ورود موفقیت‌آمیز',
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'national_id': user.national_id,
+                    'full_name': user.get_full_name(),
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'role': user.role,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser
+                }
+            }, status=status.HTTP_200_OK)
+            
+        elif tracking_code:
+            # ورود دانشجو با کد پیگیری
+            profile = user.profile
+            application = Application.objects.get(
+                applicant=profile,
+                tracking_code=tracking_code
+            )
+            
+            # Generate tokens for applicant
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'message': 'ورود موفقیت‌آمیز',
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': user.id,
+                    'national_id': user.national_id,
+                    'full_name': user.get_full_name(),
+                    'role': user.role,
+                    'round_type': application.round.type
+                },
+                'application_id': application.id,
+                'tracking_code': application.tracking_code
+            }, status=status.HTTP_200_OK)
         
     except User.DoesNotExist:
         return Response(

@@ -111,6 +111,11 @@ def create_research_record(request, application_id):
                 application=application,
                 **data
             )
+        elif record_type == 'PROMOTIONAL_ARTICLE':
+            record = ResearchArticle.objects.create(
+                application=application,
+                **data
+            )
         elif record_type == 'PATENT':
             record = Patent.objects.create(
                 application=application,
@@ -179,6 +184,7 @@ def manage_research_record(request, application_id, record_type, record_id):
     # پیدا کردن رکورد بر اساس نوع
     model_map = {
         'article': ResearchArticle,
+        'promotional_article': ResearchArticle,
         'patent': Patent,
         'award': FestivalAward,
         'conference': ConferenceArticle,

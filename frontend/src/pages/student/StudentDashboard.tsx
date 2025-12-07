@@ -20,10 +20,11 @@ const StudentDashboard = () => {
   const detectRoundType = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ results: Application[] }>('/api/applicant/applications/');
+      const response = await api.get<{ results: Application[] }>('/api/applications/');
       
-      if (response.data.results && response.data.results.length > 0) {
-        const app = response.data.results[0];
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        const app = applications[0];
         setRoundType(app.round.type);
       } else {
         // اگر application وجود نداشت، NEW user است

@@ -138,6 +138,19 @@ class User(AbstractUser):
     
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def save(self, *args, **kwargs):
+        """
+        خودکار تنظیم is_staff بر اساس role
+        """
+        # اگر نقش UNIVERSITY_ADMIN یا FACULTY_ADMIN یا SUPERADMIN است، باید is_staff=True باشد
+        if self.role in ['UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SUPERADMIN']:
+            self.is_staff = True
+        # اگر نقش APPLICANT است، باید is_staff=False باشد
+        elif self.role == 'APPLICANT':
+            self.is_staff = False
+        
+        super().save(*args, **kwargs)
 
 
 class AdminPermission(models.Model):

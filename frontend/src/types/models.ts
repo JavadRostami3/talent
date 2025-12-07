@@ -173,6 +173,7 @@ export type DocumentType =
  */
 export type ResearchRecordType =
   | 'ARTICLE'
+  | 'PROMOTIONAL_ARTICLE'
   | 'PATENT'
   | 'FESTIVAL_AWARD'
   | 'AWARD'
@@ -249,13 +250,15 @@ export type UserRole =
   | 'APPLICANT'
   | 'UNIVERSITY_ADMIN'
   | 'FACULTY_ADMIN'
-  | 'SYSTEM_ADMIN';
+  | 'SYSTEM_ADMIN'
+  | 'SUPERADMIN';
 
 export const UserRoleDisplay: Record<UserRole, string> = {
   APPLICANT: 'متقاضی',
   UNIVERSITY_ADMIN: 'مسئول دانشگاه',
   FACULTY_ADMIN: 'مسئول دانشکده',
-  SYSTEM_ADMIN: 'مدیر سیستم'
+  SYSTEM_ADMIN: 'مدیر سیستم',
+  SUPERADMIN: 'سوپر ادمین'
 };
 
 // ============================================
@@ -279,7 +282,9 @@ export interface User {
   birth_place?: string;
   military_status?: MilitaryStatus;
   role: UserRole;
+  round_type?: RoundType; // نوع فراخوان برای متقاضیان
   is_staff?: boolean;
+  is_superuser?: boolean;
   profile?: {
     address?: string;
     phone?: string;

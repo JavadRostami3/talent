@@ -199,7 +199,16 @@ class UserRegistrationSerializer(serializers.Serializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    """Serializer for user login"""
+    """Serializer for user login (both applicant and admin)"""
     national_id = serializers.CharField(max_length=10, required=True)
-    tracking_code = serializers.CharField(max_length=20, required=True)
+    tracking_code = serializers.CharField(max_length=20, required=False)  # برای دانشجویان
+    password = serializers.CharField(max_length=128, required=False)  # برای ادمین‌ها
     captcha = serializers.CharField(max_length=10, required=False)
+    
+    def validate(self, data):
+        """حداقل یکی از tracking_code یا password باید ارسال شود"""
+        if not data.get('tracking_code') and not data.get('password'):
+            raise serializers.ValidationError(
+                'یکی از فیلدهای tracking_code یا password الزامی است'
+            )
+        return data

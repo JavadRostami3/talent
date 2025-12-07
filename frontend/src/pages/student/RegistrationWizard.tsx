@@ -38,7 +38,7 @@ const RegistrationWizard = () => {
           description: 'درخواست شما یافت نشد. لطفاً با پشتیبانی تماس بگیرید.',
           variant: 'destructive',
         });
-        navigate('/student');
+        navigate('..');
       }
     } catch (error: any) {
       toast({
@@ -56,7 +56,7 @@ const RegistrationWizard = () => {
       title: 'تبریک!',
       description: 'ثبت‌نام شما با موفقیت تکمیل شد',
     });
-    navigate('/student');
+    navigate('..');
   };
 
   if (loading) {

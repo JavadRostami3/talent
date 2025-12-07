@@ -162,7 +162,7 @@ const Dashboard = () => {
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">درخواستی یافت نشد</h3>
             <p className="text-muted-foreground mb-4">شما هنوز درخواستی ثبت نکرده‌اید</p>
-            <Button onClick={() => navigate('/student/wizard')}>شروع ثبت‌نام</Button>
+            <Button onClick={() => navigate('/masters/wizard')}>شروع ثبت‌نام</Button>
           </CardContent>
         </Card>
       </div>
@@ -182,6 +182,16 @@ const Dashboard = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">داشبورد ({application.tracking_code})</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <StatusIcon className="h-5 w-5" />
+          <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+        </div>
+      </div>
       {/* انتخاب رشته - اگر هنوز انتخاب نکرده */}
       {!stats.programSelected && (
         <Card className="mb-6 border-primary bg-primary/5">
@@ -198,7 +208,7 @@ const Dashboard = () => {
                   </p>
                 </div>
               </div>
-              <Button onClick={() => navigate('/student/program-selection')} size="lg">
+              <Button onClick={() => navigate('/masters/program-selection')} size="lg">
                 <GraduationCap className="ml-2 h-5 w-5" />
                 انتخاب رشته
               </Button>
@@ -207,186 +217,78 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Progress Bar */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>پیشرفت تکمیل پرونده</span>
-              <span className="font-bold">{completionPercentage()}%</span>
+      {/* Checklist */}
+      <Card>
+        <CardHeader>
+          <CardTitle>چک‌لیست ثبت‌نام</CardTitle>
+          <CardDescription>
+            مراحل اصلی تکمیل پرونده کارشناسی ارشد
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/program-selection')}>
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              stats.programSelected ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+            }`}>
+              {stats.programSelected && <CheckCircle2 className="h-4 w-4 text-white" />}
             </div>
-            <Progress value={completionPercentage()} className="h-3" />
+            <span className={stats.programSelected ? 'line-through text-muted-foreground' : ''}>انتخاب رشته</span>
+          </div>
+          
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/personal-info')}>
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              stats.personalInfoComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+            }`}>
+              {stats.personalInfoComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
+            </div>
+            <span className={stats.personalInfoComplete ? 'line-through text-muted-foreground' : ''}>تکمیل اطلاعات شخصی</span>
+          </div>
+          
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/documents?category=identity')}>
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              stats.identityDocsComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+            }`}>
+              {stats.identityDocsComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
+            </div>
+            <span className={stats.identityDocsComplete ? 'line-through text-muted-foreground' : ''}>آپلود مدارک شناسایی</span>
+          </div>
+          
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/education')}>
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              stats.educationInfoComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+            }`}>
+              {stats.educationInfoComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
+            </div>
+            <span className={stats.educationInfoComplete ? 'line-through text-muted-foreground' : ''}>ثبت سوابق تحصیلی</span>
+          </div>
+          
+          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/documents?category=education')}>
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+              stats.educationDocsComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+            }`}>
+              {stats.educationDocsComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
+            </div>
+            <span className={stats.educationDocsComplete ? 'line-through text-muted-foreground' : ''}>آپلود مدارک تحصیلی</span>
+          </div>
+          
+          {isMAOrPhDTalent && (
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/masters/scientific-records')}>
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                stats.scientificRecordsAdded ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+              }`}>
+                {stats.scientificRecordsAdded && <CheckCircle2 className="h-4 w-4 text-white" />}
+              </div>
+              <span className={stats.scientificRecordsAdded ? 'line-through text-muted-foreground' : ''}>ثبت سوابق علمی (اختیاری)</span>
+            </div>
+          )}
+          
+          <Separator className="my-2" />
+          
+          <div className="text-center text-sm text-muted-foreground">
+            {Object.values(stats).filter(Boolean).length} از {Object.keys(stats).length} مرحله تکمیل شده
           </div>
         </CardContent>
       </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* چک‌لیست مدارک */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="ml-2 h-5 w-5 text-purple-500" />
-              چک‌لیست مدارک مورد نیاز
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>عکس پرسنلی</span>
-                {stats.identityDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>تصویر کارت ملی</span>
-                {stats.identityDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>تصویر شناسنامه</span>
-                {stats.identityDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-              
-              <Separator className="my-2" />
-              
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>مدرک کارشناسی</span>
-                {stats.educationDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>ریزنمرات کارشناسی</span>
-                {stats.educationDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              {isPhdTalent && (
-                <>
-                  <Separator className="my-2" />
-                  <div className="flex items-center justify-between py-2 border-b">
-                    <span>مدرک کارشناسی ارشد</span>
-                    {stats.educationDocsComplete ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between py-2 border-b">
-                    <span>ریزنمرات کارشناسی ارشد</span>
-                    {stats.educationDocsComplete ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between py-2 border-b">
-                    <span>فرم رتبه ممتاز ارشد</span>
-                    {stats.educationDocsComplete ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-500" />
-                    )}
-                  </div>
-                </>
-              )}
-
-              {isMAOrPhDTalent && (
-                <>
-                  <Separator className="my-2" />
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-muted-foreground">گواهی ممتاز (اختیاری)</span>
-                    <Clock className="h-5 w-5 text-gray-400" />
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* چک‌لیست تکمیل فرم */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle2 className="ml-2 h-5 w-5 text-green-500" />
-              چک‌لیست تکمیل فرم
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>انتخاب رشته</span>
-                {stats.programSelected ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>اطلاعات شخصی</span>
-                {stats.personalInfoComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>مدارک شناسایی</span>
-                {stats.identityDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>اطلاعات تحصیلی</span>
-                {stats.educationInfoComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-b">
-                <span>مدارک تحصیلی</span>
-                {stats.educationDocsComplete ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </div>
-
-              {isPhdTalent && (
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span>سوابق پژوهشی</span>
-                  {stats.scientificRecordsAdded ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  )}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };

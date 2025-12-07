@@ -5,10 +5,11 @@ from .models import User, ApplicantProfile, AdminPermission
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['national_id', 'first_name', 'last_name', 'father_name', 'email', 'mobile', 'role', 'is_active']
+    list_display = ['national_id', 'first_name', 'last_name', 'father_name', 'email', 'mobile', 'role', 'is_staff', 'is_active']
     list_filter = ['role', 'is_active', 'is_staff', 'gender']
     search_fields = ['national_id', 'first_name', 'last_name', 'email', 'mobile', 'birth_certificate_number']
     ordering = ['-date_joined']
+    readonly_fields = ['is_staff']  # is_staff به صورت خودکار از role تنظیم می‌شود
     
     fieldsets = (
         (None, {'fields': ('national_id', 'password')}),
@@ -28,7 +29,8 @@ class UserAdmin(BaseUserAdmin):
             'classes': ('collapse',)
         }),
         ('دسترسی‌ها', {
-            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            'description': 'توجه: فیلد is_staff به صورت خودکار بر اساس نقش تنظیم می‌شود'
         }),
         ('تاریخ‌ها', {'fields': ('last_login', 'date_joined')}),
     )

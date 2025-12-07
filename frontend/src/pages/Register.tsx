@@ -10,15 +10,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, Check, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { validateNationalId } from '@/utils/helpers';
 import api from '@/services/api';
 import type { RegisterRequest, RegisterResponse, RoundType } from '@/types/models';
 
 const registerSchema = z.object({
   national_id: z
     .string()
-    .length(10, 'کد ملی باید ۱۰ رقم باشد')
-    .refine((val) => validateNationalId(val), 'کد ملی نامعتبر است'),
+    .length(10, 'کد ملی باید ۱۰ رقم باشد'),
   first_name: z
     .string()
     .min(2, 'نام باید حداقل ۲ کاراکتر باشد')

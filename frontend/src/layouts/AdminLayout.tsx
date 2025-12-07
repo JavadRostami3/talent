@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Home, GraduationCap, FlaskConical, Trophy, 
   HelpCircle, ChevronDown, LogOut, Settings, User,
-  FileText, Mail, BarChart3, TrendingUp
+  FileText, Mail, BarChart3, TrendingUp, UserCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -285,7 +285,7 @@ const AdminLayout = () => {
                   <Button variant="ghost" className="gap-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(adminProfile.full_name)}
+                        <UserCircle2 className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-right">

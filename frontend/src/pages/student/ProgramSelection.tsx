@@ -244,7 +244,7 @@ const ProgramSelection = () => {
         description: 'انتخاب رشته با موفقیت ذخیره شد',
       });
       
-      navigate('/student');
+      navigate('..');
     } catch (error: any) {
       console.error('Error saving choices:', error);
       toast({
@@ -476,7 +476,7 @@ const ProgramSelection = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/student')}
+            onClick={() => navigate('..')}
             disabled={saving}
           >
             انصراف

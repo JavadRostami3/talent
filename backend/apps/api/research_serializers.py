@@ -34,16 +34,21 @@ class UnifiedResearchRecordSerializer(serializers.Serializer):
         
         # 1. مقالات پژوهشی و ترویجی
         for article in instance.research_articles.all():
+            # تشخیص نوع: اگر ترویجی باشد type را PROMOTIONAL_ARTICLE قرار می‌دهیم
+            article_type_code = article.article_type
+            record_type = 'PROMOTIONAL_ARTICLE' if article_type_code in ['PROMOTIONAL_NATIONAL', 'PROMOTIONAL_INTERNATIONAL'] else 'ARTICLE'
+            
             records.append({
                 'id': article.id,
-                'type': 'ARTICLE',
+                'type': record_type,
                 'article_type': article.get_article_type_display(),
                 'article_type_code': article.article_type,
                 'title_fa': article.title_fa,
                 'title_en': article.title_en,
                 'journal_name': article.journal_name,
-                'doi': article.doi,
-                'publish_year': article.publish_year,
+                'issn': article.issn,
+                'publish_date': article.publish_date,
+                'link': article.link,
                 'status': article.get_status_display(),
                 'status_code': article.status,
                 'authors': article.authors,
@@ -178,7 +183,8 @@ class ResearchRecordCreateSerializer(serializers.Serializer):
     """
     type = serializers.ChoiceField(
         choices=[
-            ('ARTICLE', 'مقاله'),
+            ('ARTICLE', 'مقاله پژوهشی'),
+            ('PROMOTIONAL_ARTICLE', 'مقاله ترویجی'),
             ('PATENT', 'اختراع'),
             ('FESTIVAL_AWARD', 'جایزه جشنواره'),
             ('CONFERENCE', 'مقاله کنفرانس'),
@@ -196,7 +202,8 @@ class ResearchRecordCreateSerializer(serializers.Serializer):
         
         # اعتبارسنجی فیلدهای ضروری بر اساس نوع
         required_fields = {
-            'ARTICLE': ['title_fa', 'journal_name', 'publish_year', 'article_type'],
+            'ARTICLE': ['title_fa', 'journal_name', 'article_type', 'status', 'publish_date', 'authors'],
+            'PROMOTIONAL_ARTICLE': ['title_fa', 'journal_name', 'article_type', 'status', 'publish_date', 'authors'],
             'PATENT': ['title_fa', 'patent_number', 'registration_date'],
             'FESTIVAL_AWARD': ['festival_name', 'year', 'award_type'],
             'CONFERENCE': ['title_fa', 'conference_name', 'conference_date'],

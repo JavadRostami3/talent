@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Home, User, FileText, GraduationCap, Upload, 
-  Send, AlertCircle, CheckCircle, LogOut, Building, List
+  Send, AlertCircle, CheckCircle, LogOut, Building, List,
+  FlaskConical, Languages, BookOpen, Award, UserCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,9 +60,10 @@ const StudentLayout = () => {
 
   const fetchApplication = async () => {
     try {
-      const response = await api.get('/api/applicant/applications/');
-      if (response.data.results && response.data.results.length > 0) {
-        setApplication(response.data.results[0]);
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        setApplication(applications[0]);
       }
     } catch (error) {
       // Ignore error
@@ -87,57 +89,109 @@ const StudentLayout = () => {
   };
 
   const isActivePath = (path: string) => {
-    return location.pathname === path;
+    // برای داشبورد (path خالی)
+    if (path === '') {
+      return location.pathname === '/masters' || location.pathname === '/phd';
+    }
+    // برای بقیه مسیرها
+    const fullPath = location.pathname.split('?')[0]; // حذف query params
+    return fullPath.endsWith(path) || fullPath.includes(`/${path}`);
   };
 
-  const menuItems = [
+  // تشخیص اینکه در کدام پنل هستیم
+  const isPhd = location.pathname.startsWith('/phd');
+  const isMasters = location.pathname.startsWith('/masters');
+
+  // منوی ارشد
+  const mastersMenuItems = [
     {
       label: 'داشبورد',
       icon: Home,
-      path: '/student',
+      path: '',
     },
     {
       label: 'انتخاب رشته',
       icon: List,
-      path: '/student/program-selection',
+      path: 'program-selection',
     },
     {
       label: 'اطلاعات شخصی',
       icon: User,
-      path: '/student/personal-info',
+      path: 'personal-info',
     },
     {
       label: 'اطلاعات تحصیلی',
       icon: GraduationCap,
-      path: '/student/education',
+      path: 'education',
     },
     {
-      label: 'مدارک شناسایی',
-      icon: FileText,
-      path: '/student/documents?category=identity',
-    },
-    {
-      label: 'مدارک تحصیلی',
+      label: 'مدارک',
       icon: Upload,
-      path: '/student/documents?category=education',
+      path: 'documents',
     },
     {
       label: 'ارسال برای بررسی',
       icon: Send,
-      path: '/student/submit',
-    },
-    {
-      label: 'نقص‌ها',
-      icon: AlertCircle,
-      path: '/student/deficiencies',
-      badge: 'جدید',
+      path: 'submit',
     },
     {
       label: 'وضعیت پرونده',
       icon: CheckCircle,
-      path: '/student/status',
+      path: 'status',
     },
   ];
+
+  // منوی دکتری
+  const phdMenuItems = [
+    {
+      label: 'داشبورد',
+      icon: Home,
+      path: '',
+    },
+    {
+      label: 'اطلاعات شخصی',
+      icon: User,
+      path: 'personal-info',
+    },
+    {
+      label: 'سوابق تحصیلی',
+      icon: GraduationCap,
+      path: 'education',
+    },
+    {
+      label: 'جزئیات امتیازات',
+      icon: Award,
+      path: 'scores',
+    },
+    {
+      label: 'سوابق پژوهشی',
+      icon: FlaskConical,
+      path: 'research-records',
+    },
+    {
+      label: 'المپیاد و زبان',
+      icon: Languages,
+      path: 'olympiad-language',
+    },
+    {
+      label: 'انتخاب رشته',
+      icon: BookOpen,
+      path: 'program-selection',
+    },
+    {
+      label: 'ارسال برای بررسی',
+      icon: Send,
+      path: 'submit',
+    },
+    {
+      label: 'وضعیت پرونده',
+      icon: CheckCircle,
+      path: 'status',
+    },
+  ];
+
+  // انتخاب منوی مناسب
+  const menuItems = isPhd ? phdMenuItems : mastersMenuItems;
 
   if (!studentProfile) {
     return (
@@ -186,8 +240,8 @@ const StudentLayout = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                        {getInitials(studentProfile.full_name)}
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        <UserCircle2 className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-right">
@@ -242,11 +296,6 @@ const StudentLayout = () => {
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="flex-1 text-right">{item.label}</span>
-                  {item.badge && (
-                    <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
                 </Button>
               );
             })}
@@ -277,10 +326,10 @@ const StudentLayout = () => {
                   return (
                     <Button
                       key={item.path}
-                      variant={isActive ? 'secondary' : 'ghost'}
+                      variant="ghost"
                       className={cn(
-                        'w-full justify-start gap-3 h-11',
-                        isActive && 'bg-primary/10 text-primary hover:bg-primary/20'
+                        'w-full justify-start gap-3 h-12',
+                        isActive && 'bg-primary/10 text-primary'
                       )}
                       onClick={() => {
                         navigate(item.path);
@@ -289,11 +338,6 @@ const StudentLayout = () => {
                     >
                       <item.icon className="h-5 w-5" />
                       <span className="flex-1 text-right">{item.label}</span>
-                      {item.badge && (
-                        <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
                     </Button>
                   );
                 })}

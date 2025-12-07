@@ -104,7 +104,7 @@ const PersonalInfo = () => {
         description: 'اطلاعات شخصی با موفقیت ذخیره شد',
       });
 
-      navigate('/student');
+      navigate('..');
     } catch (error) {
       toast({
         title: 'خطا',
@@ -324,7 +324,7 @@ const PersonalInfo = () => {
 
             {/* Actions */}
             <div className="flex gap-4 justify-end">
-              <Button type="button" variant="outline" onClick={() => navigate('/student')}>
+              <Button type="button" variant="outline" onClick={() => navigate('..')}>
                 انصراف
               </Button>
               <Button type="submit" disabled={loading}>

@@ -9,13 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, LogIn, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { validateNationalId } from '@/utils/helpers';
 
 const adminLoginSchema = z.object({
   nationalId: z
     .string()
-    .length(10, 'کد ملی باید ۱۰ رقم باشد')
-    .refine((val) => validateNationalId(val), 'کد ملی نامعتبر است'),
+    .length(10, 'کد ملی باید ۱۰ رقم باشد'),
   password: z
     .string()
     .min(1, 'رمز عبور الزامی است')
@@ -73,7 +71,7 @@ const AdminLogin = () => {
         navigate('/admin/university/applications');
       } else if (response.user.role === 'FACULTY_ADMIN') {
         navigate('/admin/faculty/applications');
-      } else if (response.user.role === 'SYSTEM_ADMIN') {
+      } else if (response.user.role === 'SYSTEM_ADMIN' || response.user.role === 'SUPERADMIN') {
         navigate('/admin/dashboard');
       } else {
         navigate('/admin');
