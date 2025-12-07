@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, Home, GraduationCap, FlaskConical, Trophy, 
   HelpCircle, ChevronDown, LogOut, Settings, User,
-  FileText, Mail, BarChart3
+  FileText, Mail, BarChart3, TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -114,6 +114,12 @@ const AdminLayout = () => {
       label: 'گزارش‌ها',
       icon: BarChart3,
       path: '/admin/reports',
+      show: true,
+    },
+    {
+      label: 'تحلیل‌های پیشرفته',
+      icon: TrendingUp,
+      path: '/admin/analytics',
       show: true,
     },
     {

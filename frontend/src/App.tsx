@@ -45,6 +45,7 @@ import WorkflowEditorPage from "./pages/WorkflowEditorPage";
 import WorkflowExecutionsPage from "./pages/WorkflowExecutionsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
 import ActivityTimelinePage from "./pages/ActivityTimelinePage";
+import AdvancedAnalyticsPage from "./pages/AdvancedAnalyticsPage";
 import NotFound from "./pages/NotFound";
 import { NotificationProvider } from "./context/NotificationContext";
 
@@ -165,6 +166,9 @@ const AppRoutes = () => (
       {/* Audit Logs & Activity */}
       <Route path="audit/logs" element={<AuditLogsPage />} />
       <Route path="audit/timeline" element={<ActivityTimelinePage />} />
+      
+      {/* Advanced Analytics */}
+      <Route path="analytics" element={<AdvancedAnalyticsPage />} />
       
       {/* Support */}
       <Route path="support" element={<div className="p-8"><h1 className="text-2xl font-bold">پشتیبانی</h1></div>} />
