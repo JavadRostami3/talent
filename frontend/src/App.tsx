@@ -38,7 +38,10 @@ import PhdGuide from "./pages/admin/guides/PhdGuide";
 import ReportsGuide from "./pages/admin/guides/ReportsGuide";
 import ReportsPage from "./pages/admin/ReportsPage";
 import BulkEmailPage from "./pages/admin/BulkEmailPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import NotificationSettingsPage from "./pages/NotificationSettingsPage";
 import NotFound from "./pages/NotFound";
+import { NotificationProvider } from "./context/NotificationContext";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +84,10 @@ const AppRoutes = () => (
     <Route path="/admin/login" element={<AdminLogin />} />
     <Route path="/register" element={<Register />} />
     <Route path="/announcements" element={<Announcements />} />
+    
+    {/* Notifications - Available for all authenticated users */}
+    <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+    <Route path="/notifications/settings" element={<ProtectedRoute><NotificationSettingsPage /></ProtectedRoute>} />
     
     {/* Student Routes with Layout */}
     <Route
@@ -188,7 +195,9 @@ const App = () => {
         <Toaster />
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <NotificationProvider>
+              <AppRoutes />
+            </NotificationProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

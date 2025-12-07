@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import api from '@/services/api';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface StudentProfile {
   id: number;
@@ -175,27 +176,30 @@ const StudentLayout = () => {
               </div>
             </div>
 
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      {getInitials(studentProfile.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block text-right">
-                    <p className="text-sm font-medium">
-                      {studentProfile.full_name}
-                      {application?.tracking_code && (
-                        <span className="text-xs text-muted-foreground mr-1">
-                          ({application.tracking_code})
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
+            {/* Notification Bell and User Menu */}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {getInitials(studentProfile.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block text-right">
+                      <p className="text-sm font-medium">
+                        {studentProfile.full_name}
+                        {application?.tracking_code && (
+                          <span className="text-xs text-muted-foreground mr-1">
+                            ({application.tracking_code})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium">{studentProfile.full_name}</p>

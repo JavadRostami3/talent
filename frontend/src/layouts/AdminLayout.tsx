@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
 import api from '@/services/api';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface AdminProfile {
   id: number;
@@ -243,10 +244,13 @@ const AdminLayout = () => {
               })}
             </nav>
 
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+            {/* Notification Bell and User Menu */}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       {getInitials(adminProfile.full_name)}
