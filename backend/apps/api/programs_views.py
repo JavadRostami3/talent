@@ -2,7 +2,7 @@
 Program API Views - برای انتخاب رشته توسط متقاضیان
 """
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.db.models import Q
 from apps.admissions.models import Program, AdmissionRound
@@ -10,7 +10,7 @@ from apps.api.admissions_serializers import ProgramListSerializer
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def available_programs(request):
     """
     لیست رشته‌های فعال و قابل انتخاب
@@ -31,7 +31,7 @@ def available_programs(request):
     # فیلتر بر اساس نوع فراخوان
     round_type = request.query_params.get('round_type')
     if round_type:
-        queryset = queryset.filter(round__round_type=round_type)
+        queryset = queryset.filter(round__type=round_type)
     
     # فیلتر بر اساس مقطع
     degree_level = request.query_params.get('degree_level')
@@ -65,7 +65,7 @@ def available_programs(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def program_detail(request, pk):
     """
     جزئیات یک رشته

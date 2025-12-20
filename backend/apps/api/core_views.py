@@ -4,7 +4,7 @@ Views for Faculty and Department management
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
@@ -35,8 +35,11 @@ class FacultyViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """فقط ادمین‌ها می‌توانند ایجاد/ویرایش/حذف کنند"""
+        # Allow public read-only access to list/retrieve/active/departments
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdmin()]
+        if self.action in ['list', 'retrieve', 'active', 'departments']:
+            return [AllowAny()]
         return [IsAuthenticated()]
     
     @action(detail=True, methods=['get'])
@@ -76,8 +79,11 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """فقط ادمین‌ها می‌توانند ایجاد/ویرایش/حذف کنند"""
+        # Allow public read-only access to list/retrieve/active/by_faculty
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdmin()]
+        if self.action in ['list', 'retrieve', 'active', 'by_faculty']:
+            return [AllowAny()]
         return [IsAuthenticated()]
     
     @action(detail=False, methods=['get'])

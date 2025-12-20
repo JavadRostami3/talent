@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.db import transaction
+import logging
+from django.core.exceptions import MultipleObjectsReturned
 
 from apps.accounts.models import ApplicantProfile
 from apps.admissions.models import AdmissionRound
@@ -61,10 +63,23 @@ def register_initial(request):
             profile, _ = ApplicantProfile.objects.get_or_create(user=user)
             
             # Find active round (already validated in serializer)
-            round_obj = AdmissionRound.objects.get(
-                type=data['round_type'],
-                is_active=True
-            )
+            # If multiple rounds are active for the same type, pick the most recent one.
+            try:
+                round_obj = AdmissionRound.objects.get(
+                    type=data['round_type'],
+                    is_active=True
+                )
+            except MultipleObjectsReturned:
+                logging.warning(
+                    "Multiple active AdmissionRound found for type %s; selecting the most recent one",
+                    data['round_type']
+                )
+                round_obj = AdmissionRound.objects.filter(
+                    type=data['round_type'],
+                    is_active=True
+                ).order_by('-id').first()
+                if not round_obj:
+                    raise AdmissionRound.DoesNotExist("No active AdmissionRound found")
             
             # Create or get application
             application, app_created = Application.objects.get_or_create(
