@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -11,7 +10,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Faculty {
   id: number;
@@ -27,45 +26,41 @@ interface Department {
 interface FilterPanelProps {
   faculties?: Faculty[];
   departments?: Department[];
+  universities?: { id: number; name: string }[];
   onFilterChange: (filters: ApplicationFilters) => void;
   showFacultyFilter?: boolean;
   showDepartmentFilter?: boolean;
-  showStatusFilters?: boolean;
+  showUniversityFilter?: boolean;
   roundType?: string;
 }
 
 export interface ApplicationFilters {
   round_type?: string;
   faculty_id?: string;
+  university_id?: string;
   department_id?: string;
-  university_review_status?: string;
-  faculty_review_completed?: string;
-  status?: string;
   search?: string;
   rank_percentile_group?: string;
-  has_defect?: string;
 }
 
 const AdvancedFilterPanel = ({
   faculties = [],
   departments = [],
+  universities = [],
   onFilterChange,
   showFacultyFilter = true,
   showDepartmentFilter = true,
-  showStatusFilters = true,
+  showUniversityFilter = false,
   roundType,
 }: FilterPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [filters, setFilters] = useState<ApplicationFilters>({
     round_type: roundType || 'ALL',
     faculty_id: 'ALL',
+    university_id: 'ALL',
     department_id: 'ALL',
-    university_review_status: 'ALL',
-    faculty_review_completed: 'ALL',
-    status: 'ALL',
     search: '',
     rank_percentile_group: 'ALL',
-    has_defect: 'ALL',
   });
 
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
@@ -79,14 +74,12 @@ const AdvancedFilterPanel = ({
       ([k, v]) => v && v !== 'ALL' && v !== ''
     ).length;
     setActiveFiltersCount(count);
-  };
 
-  const applyFilters = () => {
-    // Convert 'ALL' to undefined for API
+    // Apply immediately (convert ALL to undefined)
     const apiFilters: ApplicationFilters = {};
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value && value !== 'ALL' && value !== '') {
-        apiFilters[key as keyof ApplicationFilters] = value;
+    Object.entries(newFilters).forEach(([k, v]) => {
+      if (v && v !== 'ALL' && v !== '') {
+        apiFilters[k as keyof ApplicationFilters] = v;
       }
     });
     onFilterChange(apiFilters);
@@ -96,20 +89,18 @@ const AdvancedFilterPanel = ({
     const resetFilters: ApplicationFilters = {
       round_type: roundType || 'ALL',
       faculty_id: 'ALL',
+      university_id: 'ALL',
       department_id: 'ALL',
-      university_review_status: 'ALL',
-      faculty_review_completed: 'ALL',
-      status: 'ALL',
       search: '',
       rank_percentile_group: 'ALL',
-      has_defect: 'ALL',
     };
     setFilters(resetFilters);
     setActiveFiltersCount(0);
     onFilterChange({});
   };
 
-  const filteredDepartments = departments.filter(
+  const safeDepartments = Array.isArray(departments) ? departments : [];
+  const filteredDepartments = safeDepartments.filter(
     (dept) => filters.faculty_id === 'ALL' || dept.faculty_id.toString() === filters.faculty_id
   );
 
@@ -147,15 +138,41 @@ const AdvancedFilterPanel = ({
                 placeholder="کد ملی، نام، نام خانوادگی، کد پیگیری..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
                 className="pr-10"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            {/* University Filter */}
+            {showUniversityFilter && (
+              <div>
+                <Label>دانشگاه</Label>
+                <Select
+                  value={filters.university_id}
+                  onValueChange={(value) => handleFilterChange('university_id', value)}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="انتخاب کنید" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">همه دانشگاه‌ها</SelectItem>
+                    {Array.isArray(universities) && universities.length === 0 && (
+                      <SelectItem value="__EMPTY" disabled>
+                        دانشگاهی ثبت نشده
+                      </SelectItem>
+                    )}
+                    {Array.isArray(universities) && universities.map((u) => (
+                      <SelectItem key={u.id} value={u.id.toString()}>
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {/* Faculty Filter */}
-            {showFacultyFilter && faculties.length > 0 && (
+            {showFacultyFilter && (
               <div>
                 <Label>دانشکده</Label>
                 <Select
@@ -169,10 +186,15 @@ const AdvancedFilterPanel = ({
                   }}
                 >
                   <SelectTrigger className="mt-2">
-                    <SelectValue />
+                    <SelectValue placeholder="انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">همه دانشکده‌ها</SelectItem>
+                    {faculties.length === 0 && (
+                      <SelectItem value="__EMPTY" disabled>
+                        دانشکده‌ای ثبت نشده
+                      </SelectItem>
+                    )}
                     {faculties.map((faculty) => (
                       <SelectItem key={faculty.id} value={faculty.id.toString()}>
                         {faculty.name}
@@ -184,66 +206,29 @@ const AdvancedFilterPanel = ({
             )}
 
             {/* Department Filter */}
-            {showDepartmentFilter && departments.length > 0 && (
+            {showDepartmentFilter && (
               <div>
                 <Label>گروه آموزشی</Label>
                 <Select
                   value={filters.department_id}
                   onValueChange={(value) => handleFilterChange('department_id', value)}
-                  disabled={filters.faculty_id === 'ALL'}
+                  disabled={false}
                 >
                   <SelectTrigger className="mt-2">
-                    <SelectValue />
+                    <SelectValue placeholder="انتخاب کنید" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">همه گروه‌ها</SelectItem>
+                    {filteredDepartments.length === 0 && (
+                      <SelectItem value="__EMPTY" disabled>
+                        گروهی برای این دانشکده نیست
+                      </SelectItem>
+                    )}
                     {filteredDepartments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
                         {dept.name}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* University Review Status */}
-            {showStatusFilters && (
-              <div>
-                <Label>وضعیت بررسی دانشگاه</Label>
-                <Select
-                  value={filters.university_review_status}
-                  onValueChange={(value) => handleFilterChange('university_review_status', value)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">همه</SelectItem>
-                    <SelectItem value="PENDING">در انتظار بررسی</SelectItem>
-                    <SelectItem value="APPROVED">تایید شده</SelectItem>
-                    <SelectItem value="APPROVED_WITH_DEFECT">تایید با نقص</SelectItem>
-                    <SelectItem value="REJECTED">رد شده</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Faculty Review Status */}
-            {showStatusFilters && (
-              <div>
-                <Label>وضعیت بررسی دانشکده</Label>
-                <Select
-                  value={filters.faculty_review_completed}
-                  onValueChange={(value) => handleFilterChange('faculty_review_completed', value)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">همه</SelectItem>
-                    <SelectItem value="false">در انتظار بررسی</SelectItem>
-                    <SelectItem value="true">بررسی شده</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -268,35 +253,17 @@ const AdvancedFilterPanel = ({
               </Select>
             </div>
 
-            {/* Has Defect */}
-            <div>
-              <Label>وضعیت نقص</Label>
-              <Select
-                value={filters.has_defect}
-                onValueChange={(value) => handleFilterChange('has_defect', value)}
-              >
-                <SelectTrigger className="mt-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">همه</SelectItem>
-                  <SelectItem value="true">دارای نقص</SelectItem>
-                  <SelectItem value="false">بدون نقص</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-4">
-            <Button onClick={applyFilters} className="flex-1">
-              <Search className="ml-2 h-4 w-4" />
-              اعمال فیلترها
-            </Button>
-            <Button onClick={resetFilters} variant="outline">
-              <X className="ml-2 h-4 w-4" />
-              پاک کردن
-            </Button>
+          {/* Reset Button */}
+          <div className="flex justify-start pt-2">
+            <button
+              type="button"
+              className="text-sm text-destructive hover:underline"
+              onClick={resetFilters}
+            >
+              پاک کردن فیلترها
+            </button>
           </div>
 
           {/* Active Filters Summary */}
@@ -308,17 +275,29 @@ const AdvancedFilterPanel = ({
                   if (!value || value === 'ALL' || value === '') return null;
                   
                   let label = key;
-                  const displayValue = value;
+                  let displayValue: string | number = value as string;
+                  // show human-friendly names for ids
+                  if (key === 'faculty_id') {
+                    const f = faculties.find((ff) => ff.id.toString() === value);
+                    if (f) displayValue = f.name;
+                  }
+                  if (key === 'department_id') {
+                    const d = departments.find((dd) => dd.id.toString() === value);
+                    if (d) displayValue = d.name;
+                  }
+                  if (key === 'university_id') {
+                    // @ts-ignore
+                    const u = (universities || []).find((uu) => uu.id.toString() === value);
+                    if (u) displayValue = u.name;
+                  }
                   
                   // Convert keys to Persian
                   const keyLabels: Record<string, string> = {
                     search: 'جستجو',
+                    university_id: 'دانشگاه',
                     faculty_id: 'دانشکده',
                     department_id: 'گروه',
-                    university_review_status: 'وضعیت دانشگاه',
-                    faculty_review_completed: 'وضعیت دانشکده',
                     rank_percentile_group: 'رتبه',
-                    has_defect: 'نقص',
                   };
                   
                   label = keyLabels[key] || key;
@@ -326,12 +305,6 @@ const AdvancedFilterPanel = ({
                   return (
                     <Badge key={key} variant="secondary" className="gap-1">
                       {label}: {displayValue}
-                      <button
-                        onClick={() => handleFilterChange(key as keyof ApplicationFilters, 'ALL')}
-                        className="hover:bg-destructive/20 rounded-full"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
                     </Badge>
                   );
                 })}

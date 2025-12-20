@@ -36,7 +36,7 @@ const GuideRouter = () => {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold mb-4">راهنما یافت نشد</h2>
-        <Button onClick={() => navigate('/admin/dashboard')}>
+        <Button onClick={() => navigate('/admin')}>
           <ArrowRight className="ml-2 h-4 w-4" />
           بازگشت به داشبورد
         </Button>
@@ -48,7 +48,7 @@ const GuideRouter = () => {
     <div>
       <Button 
         variant="ghost" 
-        onClick={() => navigate('/admin/dashboard')}
+        onClick={() => navigate('/admin')}
         className="mb-4"
       >
         <ArrowRight className="ml-2 h-4 w-4" />

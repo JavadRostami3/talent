@@ -62,7 +62,7 @@ class IsUniversityAdmin(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         
-        if request.user.role == 'SUPERADMIN':
+        if request.user.role in ['SUPERADMIN', 'ADMIN']:
             return True
         
         if request.user.role != 'UNIVERSITY_ADMIN':

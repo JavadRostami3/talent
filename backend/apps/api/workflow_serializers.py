@@ -3,6 +3,7 @@ Serializers for workflow app
 """
 from rest_framework import serializers
 from apps.workflow.models import FormReview, ApplicationWorkflowLog
+from django.utils import timezone
 
 
 class FormReviewSerializer(serializers.ModelSerializer):
@@ -40,8 +41,12 @@ class FormReviewCreateUpdateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """ایجاد بررسی جدید"""
+        # attach reviewer and reviewed_at
         validated_data['reviewer'] = self.context['request'].user
         validated_data['reviewed_at'] = timezone.now()
+        # allow passing application via context from the view
+        if 'application' in self.context and not validated_data.get('application'):
+            validated_data['application'] = self.context['application']
         return super().create(validated_data)
     
     def update(self, instance, validated_data):

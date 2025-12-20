@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import AuthLayout from '@/layouts/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -64,6 +65,7 @@ const Register = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -81,6 +83,9 @@ const Register = () => {
       setValue('round_type', preFilledData.roundType);
     }
   }, [preFilledData, setValue]);
+
+  const selectedRoundType = watch('round_type');
+  const selectedRoundLabel = selectedRoundType ? roundTypeLabels[selectedRoundType as RoundType] : undefined;
 
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
@@ -143,7 +148,9 @@ const Register = () => {
   };
 
   const handleCopyTrackingCode = () => {
-    if (trackingCode) {
+    if (!trackingCode) return;
+
+    try {
       navigator.clipboard.writeText(trackingCode);
       setCopied(true);
       toast({
@@ -151,6 +158,12 @@ const Register = () => {
         description: 'کد پیگیری در کلیپ‌بورد کپی شد',
       });
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: 'خطا',
+        description: 'کپی خودکار انجام نشد. دستی کپی کنید.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -161,8 +174,8 @@ const Register = () => {
   // If registration successful, show tracking code
   if (trackingCode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 p-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6 sm:p-10">
+        <div className="w-full max-w-lg space-y-8 bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10">
           <div className="text-center space-y-4">
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
@@ -189,6 +202,7 @@ const Register = () => {
                 </p>
               </div>
               <Button
+                type="button"
                 onClick={handleCopyTrackingCode}
                 variant={copied ? 'default' : 'outline'}
                 className="w-full mb-3"
@@ -224,49 +238,28 @@ const Register = () => {
 
   // Registration form
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Image */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-r border-slate-200 dark:border-slate-700">
-        <img 
-          src="/umz-gate.webp" 
-          alt="دانشگاه مازندران" 
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Right Side - Registration Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-slate-950">
-        <div className="w-full max-w-2xl space-y-10">
-          {/* Logo and Title */}
-          <div className="text-center space-y-4">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="/umz-logo.png" 
-              alt="دانشگاه مازندران" 
-              className="h-24 w-24 object-contain"
-            />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            تکمیل اطلاعات ثبت‌نام
-          </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {roundTypeLabels[preFilledData?.roundType || 'MA_TALENT']}
-          </p>
+    <AuthLayout
+      title="تکمیل اطلاعات ثبت‌نام"
+      subtitle={selectedRoundLabel || 'اطلاعات اولیه خود را وارد کنید'}
+      helper="پس از ثبت‌نام، کد پیگیری برای ورود به سامانه به شما نمایش داده می‌شود."
+    >
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <p className="font-medium mb-1">راهنمای سریع</p>
+          <p>اطلاعات را با دقت وارد کنید. شماره موبایل و ایمیل برای اطلاع‌رسانی استفاده می‌شوند و کد پیگیری تنها راه ورود شما است.</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* نام و نام خانوادگی */}
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="first_name" className="text-sm text-slate-700 dark:text-slate-300">
+              <Label htmlFor="first_name" className="text-sm text-slate-700">
                 نام <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="first_name"
                 {...register('first_name')}
                 placeholder="نام"
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                className="bg-white border-slate-200"
               />
               {errors.first_name && (
                 <p className="text-sm text-red-500">{errors.first_name.message}</p>
@@ -274,14 +267,14 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="last_name" className="text-sm text-slate-700 dark:text-slate-300">
+              <Label htmlFor="last_name" className="text-sm text-slate-700">
                 نام خانوادگی <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="last_name"
                 {...register('last_name')}
                 placeholder="نام خانوادگی"
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                className="bg-white border-slate-200"
               />
               {errors.last_name && (
                 <p className="text-sm text-red-500">{errors.last_name.message}</p>
@@ -289,9 +282,8 @@ const Register = () => {
             </div>
           </div>
 
-          {/* کد ملی */}
           <div className="space-y-2">
-            <Label htmlFor="national_id" className="text-sm text-slate-700 dark:text-slate-300">
+            <Label htmlFor="national_id" className="text-sm text-slate-700">
               کد ملی <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -300,17 +292,16 @@ const Register = () => {
               placeholder="کد ملی 10 رقمی"
               maxLength={10}
               dir="ltr"
-              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+              className="bg-white border-slate-200"
             />
             {errors.national_id && (
               <p className="text-sm text-red-500">{errors.national_id.message}</p>
             )}
           </div>
 
-          {/* موبایل و ایمیل */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="mobile" className="text-sm text-slate-700 dark:text-slate-300">
+              <Label htmlFor="mobile" className="text-sm text-slate-700">
                 شماره موبایل <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -319,7 +310,7 @@ const Register = () => {
                 placeholder="09123456789"
                 dir="ltr"
                 maxLength={11}
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                className="bg-white border-slate-200"
               />
               {errors.mobile && (
                 <p className="text-sm text-red-500">{errors.mobile.message}</p>
@@ -327,7 +318,7 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm text-slate-700 dark:text-slate-300">
+              <Label htmlFor="email" className="text-sm text-slate-700">
                 ایمیل <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -336,7 +327,7 @@ const Register = () => {
                 {...register('email')}
                 placeholder="example@email.com"
                 dir="ltr"
-                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                className="bg-white border-slate-200"
               />
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -344,17 +335,16 @@ const Register = () => {
             </div>
           </div>
 
-          {/* نوع فراخوان */}
           <div className="space-y-2">
-            <Label htmlFor="round_type" className="text-sm text-slate-700 dark:text-slate-300">
+            <Label htmlFor="round_type" className="text-sm text-slate-700">
               نوع فراخوان <span className="text-red-500">*</span>
             </Label>
             <Select
-              value={preFilledData?.roundType}
-              onValueChange={(value) => setValue('round_type', value as RoundType)}
+              value={selectedRoundType || undefined}
+              onValueChange={(value) => setValue('round_type', value as RoundType, { shouldValidate: true })}
               disabled={!!preFilledData?.roundType}
             >
-              <SelectTrigger className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+              <SelectTrigger className="bg-white border-slate-200">
                 <SelectValue placeholder="نوع فراخوان را انتخاب کنید" />
               </SelectTrigger>
               <SelectContent>
@@ -369,7 +359,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* دکمه ثبت‌نام */}
           <Button 
             type="submit" 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-base font-medium" 
@@ -379,9 +368,8 @@ const Register = () => {
             {loading ? 'در حال ثبت‌نام...' : 'ثبت‌نام'}
           </Button>
 
-          {/* لینک ورود */}
           <div className="text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-slate-600">
               قبلاً ثبت‌نام کرده‌اید؟{' '}
               <Link to="/login" className="text-blue-600 hover:underline font-medium">
                 ورود به سامانه
@@ -389,16 +377,8 @@ const Register = () => {
             </p>
           </div>
         </form>
-
-        {/* Footer */}
-        <div className="text-center pt-4">
-          <p className="text-xs text-slate-500">
-            © 1404 دانشگاه مازندران - تمامی حقوق محفوظ است
-          </p>
-        </div>
-        </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

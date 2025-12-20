@@ -32,13 +32,11 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ApplicationReview from "./pages/admin/ApplicationReview";
 import UniversityAdminApplicationsList from "./pages/admin/UniversityAdminApplicationsList";
 import UniversityAdminApplicationReview from "./pages/admin/UniversityAdminApplicationReview";
-import UniversityApplicationsList from "./pages/admin/university/ApplicationsList";
 import FacultyAdminApplicationsList from "./pages/admin/FacultyAdminApplicationsList";
 import FacultyAdminApplicationReview from "./pages/admin/FacultyAdminApplicationReview";
-import FacultyApplicationsList from "./pages/admin/faculty/ApplicationsList";
-import FacultyApplicationReview from "./pages/admin/faculty/ApplicationReview";
 import PhdExamApplicants from "./pages/admin/applicants/PhdExamApplicants";
 import MastersTalentedApplicants from "./pages/admin/applicants/MastersTalentedApplicants";
+import MaProgramAdmissions from "./pages/admin/admissions/MaProgramAdmissions";
 import PhdTalentedApplicants from "./pages/admin/applicants/PhdTalentedApplicants";
 import OlympiadApplicants from "./pages/admin/applicants/OlympiadApplicants";
 import MastersGuide from "./pages/admin/guides/MastersGuide";
@@ -59,7 +57,15 @@ import { NotificationProvider } from "./context/NotificationContext";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
+const ProtectedRoute = ({ 
+  children, 
+  allowedRoles, 
+  redirectTo 
+}: { 
+  children: React.ReactNode; 
+  allowedRoles?: string[]; 
+  redirectTo?: string;
+}) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
@@ -74,7 +80,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={redirectTo || "/login"} replace />;
   }
 
   if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
@@ -82,7 +88,7 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
     if (user.role === 'APPLICANT') {
       return <Navigate to="/" replace />;
     }
-    if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN'].includes(user.role)) {
+    if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN', 'SUPERADMIN'].includes(user.role)) {
       return <Navigate to="/admin" replace />;
     }
     return <Navigate to="/" replace />;
@@ -111,8 +117,8 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
       // به صفحه اصلی هدایت می‌شود، آنجا تشخیص می‌دهد کدام پنل را نشان دهد
       return <Navigate to="/" replace />;
     }
-    if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN'].includes(user.role)) {
-      return <Navigate to="/admin/dashboard" replace />;
+    if (['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN', 'SUPERADMIN'].includes(user.role)) {
+      return <Navigate to="/admin" replace />;
     }
   }
 
@@ -204,27 +210,36 @@ const AppRoutes = () => {
     <Route
       path="/admin"
       element={
-        <ProtectedRoute allowedRoles={['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN']}>
+        <ProtectedRoute 
+          allowedRoles={['ADMIN', 'UNIVERSITY_ADMIN', 'FACULTY_ADMIN', 'SYSTEM_ADMIN', 'SUPERADMIN']}
+          redirectTo="/admin/login"
+        >
           <AdminLayout />
         </ProtectedRoute>
       }
     >
-      <Route index element={<Navigate to="/admin/dashboard" replace />} />
-      <Route path="dashboard" element={<AdminDashboard />} />
+      <Route index element={<AdminDashboard />} />
+      <Route path="dashboard" element={<Navigate to="/admin" replace />} />
       
       {/* University Admin */}
-      <Route path="university/applications" element={<UniversityApplicationsList />} />
+      <Route path="university/applications" element={<UniversityAdminApplicationsList />} />
       <Route path="university/applications/:id" element={<UniversityAdminApplicationReview />} />
       
       {/* Faculty Admin */}
-      <Route path="faculty/applications" element={<FacultyApplicationsList />} />
-      <Route path="faculty/applications/:id" element={<FacultyApplicationReview />} />
+      <Route path="faculty/applications" element={<FacultyAdminApplicationsList />} />
+      <Route path="faculty/applications/:id" element={<FacultyAdminApplicationReview />} />
       
       {/* Round Type specific routes - Applicants Lists */}
       <Route path="applicants/phd-exam" element={<PhdExamApplicants />} />
       <Route path="applicants/masters-talented" element={<MastersTalentedApplicants />} />
       <Route path="applicants/phd-talented" element={<PhdTalentedApplicants />} />
       <Route path="applicants/olympiad" element={<OlympiadApplicants />} />
+
+      {/* Talent shortcuts */}
+      <Route path="talent" element={<Navigate to="/admin/talent/masters" replace />} />
+      <Route path="talent/masters" element={<MastersTalentedApplicants />} />
+      <Route path="talent/admissions/programs" element={<MaProgramAdmissions />} />
+      <Route path="talent/phd" element={<PhdTalentedApplicants />} />
       
       {/* Application Review */}
       <Route path="applications/:id" element={<ApplicationReview />} />

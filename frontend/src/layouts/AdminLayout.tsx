@@ -86,7 +86,7 @@ const AdminLayout = () => {
       
       toast({
         title: 'هشدار',
-        description: 'از داده‌های موقت استفاده می‌شود - Backend را اجرا کنید',
+        description: 'پروفایل ادمین دریافت نشد؛ داده موقت نمایش داده می‌شود',
         variant: 'destructive',
       });
     }
@@ -95,6 +95,9 @@ const AdminLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
     navigate('/login');
     toast({
       title: 'خروج موفق',
@@ -119,20 +122,20 @@ const AdminLayout = () => {
     {
       label: 'صفحه اصلی',
       icon: Home,
-      path: '/admin/dashboard',
+      path: '/admin',
       show: true,
     },
     {
       label: 'بررسی دانشگاه',
       icon: FileText,
       path: '/admin/university/applications',
-      show: adminProfile?.role === 'UNIVERSITY_ADMIN' || adminProfile?.role === 'SYSTEM_ADMIN' || false,
+      show: ['UNIVERSITY_ADMIN', 'SYSTEM_ADMIN', 'SUPERADMIN'].includes(adminProfile?.role || ''),
     },
     {
       label: 'بررسی دانشکده',
       icon: GraduationCap,
       path: '/admin/faculty/applications',
-      show: adminProfile?.role === 'FACULTY_ADMIN' || adminProfile?.role === 'SYSTEM_ADMIN' || false,
+      show: ['FACULTY_ADMIN', 'SYSTEM_ADMIN', 'SUPERADMIN'].includes(adminProfile?.role || ''),
     },
     {
       label: 'گزارش‌ها',
@@ -150,7 +153,7 @@ const AdminLayout = () => {
       label: 'ارسال ایمیل گروهی',
       icon: Mail,
       path: '/admin/bulk-email',
-      show: adminProfile?.role === 'SYSTEM_ADMIN' || false,
+      show: ['SYSTEM_ADMIN', 'SUPERADMIN'].includes(adminProfile?.role || ''),
     },
     {
       label: 'آزمون دکتری',
@@ -165,6 +168,7 @@ const AdminLayout = () => {
       show: 
         adminProfile?.accessible_round_types.includes('MA_TALENT') ||
         adminProfile?.accessible_round_types.includes('PHD_TALENT') ||
+        adminProfile?.role === 'SUPERADMIN' ||
         false,
       subItems: [
         {

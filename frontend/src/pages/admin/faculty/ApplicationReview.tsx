@@ -353,7 +353,7 @@ const FacultyApplicationReview = () => {
                     {application.documents?.map((doc, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <p className="font-medium">{doc.document_type}</p>
+                          <p className="font-medium">{doc.type || doc.document_type}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(doc.uploaded_at).toLocaleDateString('fa-IR')}
                           </p>

@@ -89,18 +89,11 @@ const UniversityAdminApplicationsList = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   // فیلترها
-  const [selectedRoundType, setSelectedRoundType] = useState<RoundType | 'ALL'>('ALL');
+  const ROUND_TYPE: RoundType = 'MA_TALENT';
   const [selectedReviewStatus, setSelectedReviewStatus] = useState<string>('ALL');
   const [selectedFaculty, setSelectedFaculty] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCorrected, setShowCorrected] = useState(false);
-
-  const roundTypeLabels: Record<RoundType, string> = {
-    MA_TALENT: 'استعداد ارشد',
-    PHD_TALENT: 'استعداد دکتری',
-    PHD_EXAM: 'آزمون دکتری',
-    OLYMPIAD: 'المپیاد',
-  };
 
   const reviewStatusLabels = {
     PENDING: 'در انتظار بررسی',
@@ -119,7 +112,7 @@ const UniversityAdminApplicationsList = () => {
   useEffect(() => {
     fetchApplications();
     fetchStatistics();
-  }, [selectedRoundType, selectedReviewStatus, selectedFaculty, searchQuery, showCorrected, currentPage]);
+  }, [selectedReviewStatus, selectedFaculty, searchQuery, showCorrected, currentPage]);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -129,9 +122,7 @@ const UniversityAdminApplicationsList = () => {
         page_size: 20,
       };
 
-      if (selectedRoundType !== 'ALL') {
-        params.round_type = selectedRoundType;
-      }
+      params.round_type = ROUND_TYPE;
       if (selectedReviewStatus !== 'ALL') {
         params.university_review_status = selectedReviewStatus;
       }
@@ -164,9 +155,7 @@ const UniversityAdminApplicationsList = () => {
   const fetchStatistics = async () => {
     try {
       const params: any = {};
-      if (selectedRoundType !== 'ALL') {
-        params.round_type = selectedRoundType;
-      }
+      params.round_type = ROUND_TYPE;
 
       const response = await api.get<Statistics>('/api/admin/university/statistics/', { params });
       setStatistics(response.data);
@@ -180,7 +169,6 @@ const UniversityAdminApplicationsList = () => {
   };
 
   const resetFilters = () => {
-    setSelectedRoundType('ALL');
     setSelectedReviewStatus('ALL');
     setSelectedFaculty('ALL');
     setSearchQuery('');
@@ -301,24 +289,7 @@ const UniversityAdminApplicationsList = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Round Type Filter */}
-            <div>
-              <label className="text-sm font-medium mb-2 block">نوع فراخوان</label>
-              <Select value={selectedRoundType} onValueChange={(v: any) => setSelectedRoundType(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">همه</SelectItem>
-                  <SelectItem value="MA_TALENT">استعداد ارشد</SelectItem>
-                  <SelectItem value="PHD_TALENT">استعداد دکتری</SelectItem>
-                  <SelectItem value="PHD_EXAM">آزمون دکتری</SelectItem>
-                  <SelectItem value="OLYMPIAD">المپیاد</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Review Status Filter */}
             <div>
               <label className="text-sm font-medium mb-2 block">وضعیت بررسی</label>

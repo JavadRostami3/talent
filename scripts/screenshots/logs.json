@@ -1,0 +1,55 @@
+{
+  "logs": [],
+  "network": [
+    {
+      "url": "http://localhost:8082/register",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/assets/index-DYVt4Cu0.css",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/assets/index-DTqERgwA.js",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "blob:http://localhost:8082/0aa74535-47fd-48a7-a13d-17f386654a2d",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/fonts/Kalameh-Regular.ttf",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/umz-logo.png",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/umz-gate.webp",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/fonts/Kalameh-SemiBold.ttf",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/fonts/Kalameh-Medium.ttf",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "url": "http://localhost:8082/fonts/Kalameh-Bold.ttf",
+      "status": 200,
+      "ok": true
+    }
+  ]
+}

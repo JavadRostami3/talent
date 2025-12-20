@@ -23,8 +23,9 @@ const Deficiencies = () => {
 
   const fetchDeficiencies = async () => {
     try {
-      const response = await api.get('/api/applicant/applications/');
-      const application = response.data.results[0];
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      const application = applications[0];
       
       if (application?.deficiencies) {
         setDeficiencies(application.deficiencies);

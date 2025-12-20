@@ -247,7 +247,7 @@ const ApplicationReview = () => {
                     >
                       <FileText className="h-4 w-4" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{doc.document_type}</p>
+                        <p className="text-sm font-medium truncate">{doc.type || doc.document_type}</p>
                       </div>
                       <ExternalLink className="h-4 w-4 shrink-0" />
                     </a>

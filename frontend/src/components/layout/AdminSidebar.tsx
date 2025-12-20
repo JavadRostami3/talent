@@ -5,6 +5,7 @@ export const AdminSidebar = () => {
   const links = [
     { to: '/admin', icon: LayoutDashboard, label: 'داشبورد', end: true },
     { to: '/admin/applications', icon: Users, label: 'لیست متقاضیان' },
+    { to: '/admin/talent/admissions/programs', icon: BookOpen, label: 'پذیرش ارشد' },
     { to: '/admin/announcements', icon: Bell, label: 'اطلاعیه‌ها' },
     { to: '/admin/process-guide', icon: BookOpen, label: 'راهنمای فرآیندها' },
     { to: '/admin/settings', icon: Settings, label: 'تنظیمات' },

@@ -149,6 +149,7 @@ export type DocumentType =
   | 'ID_CARD'
   | 'BIRTH_CERTIFICATE'
   | 'BSC_TRANSCRIPT'
+  | 'BSC_CERT'
   | 'BSC_CERTIFICATE'
   | 'TRANSCRIPT'
   | 'DEGREE'
@@ -157,7 +158,11 @@ export type DocumentType =
   | 'MSC_CERTIFICATE'
   | 'MSC_THESIS'
   | 'MSC_EXCELLENCE_CERT'
+  | 'EXCELLENCE_CERT'
+  | 'GRADUATION_CERT'
+  | 'ENROLLMENT_CERT'
   | 'OLYMPIAD_CERT'
+  | 'ENGLISH_TEST_CERT'
   | 'LANGUAGE_CERTIFICATE'
   | 'RECOMMENDATION_LETTER'
   | 'RESEARCH_PROPOSAL'
@@ -336,6 +341,7 @@ export interface Department {
 export interface Program {
   id: number;
   name: string;
+  orientation?: string;
   code: string;
   faculty: Faculty | number;
   faculty_name?: string;
@@ -432,6 +438,7 @@ export interface EducationRecord {
 export interface ApplicationDocument {
   id: number;
   application: number;
+  type?: DocumentType;
   doc_type?: DocumentType;
   document_type?: DocumentType;
   type_display?: string;

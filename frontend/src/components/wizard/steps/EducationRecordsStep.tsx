@@ -64,6 +64,21 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
 
   const selectedStatus = watch('status');
 
+  const formatDate = (year?: number, month?: number) => {
+    if (!year) return undefined;
+    if (!month) return `${year}`;
+    return `${year}/${String(month).padStart(2, '0')}/01`;
+  };
+
+  const parseDate = (value?: string) => {
+    if (!value) return {};
+    const parts = value.split(/[\\/\\-]/).filter(Boolean);
+    const year = parseInt(parts[0], 10);
+    const month = parts[1] ? parseInt(parts[1], 10) : undefined;
+    if (Number.isNaN(year)) return {};
+    return { year, month };
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -72,7 +87,7 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
     setFetchingData(true);
     try {
       // بارگذاری لیست دانشگاه‌ها
-      const univResponse = await api.get('/api/universities/');
+      const univResponse = await api.get('/api/core/universities/');
       setUniversities(univResponse.data.results || univResponse.data);
 
       // بارگذاری سوابق تحصیلی موجود
@@ -104,8 +119,8 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
         semester_count: existing.semester_count || undefined,
         class_size: existing.class_size || undefined,
         rank_status: existing.rank_status || undefined,
-        start_date: existing.start_date || undefined,
-        end_date: existing.end_date || undefined,
+        start_date: formatDate(existing.start_year, existing.start_month),
+        end_date: formatDate(existing.graduation_year, existing.graduation_month),
       });
     } else {
       // فرم خالی برای سابقه جدید
@@ -130,11 +145,22 @@ const EducationRecordsStep = ({ applicationId, roundType, onComplete }: Educatio
     setLoading(true);
     try {
       const existing = existingRecords.find(r => r.degree_level === data.degree_level);
+      const startDate = parseDate(data.start_date);
+      const endDate = parseDate(data.end_date);
+      const payload = {
+        ...data,
+        start_year: startDate.year,
+        start_month: startDate.month,
+        graduation_year: endDate.year,
+        graduation_month: endDate.month,
+      };
+      delete (payload as any).start_date;
+      delete (payload as any).end_date;
 
       if (existing) {
-        await applicationService.updateEducationRecord(applicationId, existing.id, data);
+        await applicationService.updateEducationRecord(applicationId, existing.id, payload);
       } else {
-        await applicationService.createEducationRecord(applicationId, data as any);
+        await applicationService.createEducationRecord(applicationId, payload as any);
       }
 
       toast({

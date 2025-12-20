@@ -126,7 +126,8 @@ const ResearchRecordsStep = ({ applicationId, onComplete }: ResearchRecordsStepP
     setFetchingData(true);
     try {
       const data = await applicationService.getResearchRecords(applicationId);
-      setRecords(data);
+      const recordsList = Array.isArray(data) ? data : data?.records || [];
+      setRecords(recordsList);
     } catch (error: any) {
       toast({
         title: 'خطا',

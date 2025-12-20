@@ -250,6 +250,25 @@ class AdminPermission(models.Model):
             return self.faculties.filter(id=faculty.id).exists()
         
         return False
+
+    def can_review_application(self, application):
+        """بررسی دسترسی برای مشاهده/بررسی یک پرونده"""
+        if self.has_full_access:
+            return True
+
+        if not self.has_access_to_round_type(application.round.type):
+            return False
+
+        if self.is_university_admin():
+            return True
+
+        if self.is_faculty_admin():
+            allowed_faculties = self.faculties.all()
+            if not allowed_faculties.exists():
+                return True
+            return application.choices.filter(program__faculty__in=allowed_faculties).exists()
+
+        return False
     
     def get_allowed_faculties(self):
         """دریافت لیست دانشکده‌های مجاز"""

@@ -34,7 +34,7 @@ const PhdEducationDocuments = () => {
   const documentTypes: DocumentType[] = [
     { type: 'BSC_CERT', label: 'مدرک کارشناسی', required: true },
     { type: 'BSC_TRANSCRIPT', label: 'ریزنمرات کارشناسی', required: true },
-    { type: 'BSC_EXCELLENCE_CERT', label: 'گواهی رتبه ممتاز کارشناسی', required: false },
+    { type: 'EXCELLENCE_CERT', label: 'گواهی رتبه ممتاز کارشناسی', required: false },
     { type: 'MSC_CERT', label: 'مدرک کارشناسی ارشد', required: true },
     { type: 'MSC_TRANSCRIPT', label: 'ریزنمرات کارشناسی ارشد', required: true },
     { type: 'MSC_EXCELLENCE_CERT', label: 'فرم رتبه ممتاز ارشد', required: false },
@@ -76,7 +76,7 @@ const PhdEducationDocuments = () => {
     try {
       setUploadProgress({ ...uploadProgress, [type]: 0 });
 
-      const response = await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
+      const response = await api.post(`/api/applications/${applicationId}/documents/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -109,7 +109,7 @@ const PhdEducationDocuments = () => {
     if (!applicationId) return;
 
     try {
-      await api.delete(`/api/applicant/applications/${applicationId}/documents/${docId}/`);
+      await api.delete(`/api/applications/${applicationId}/documents/${docId}/`);
       setDocuments(documents.filter(d => d.id !== docId));
       
       toast({

@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { TokenRefreshRequest, TokenRefreshResponse } from '@/types/models';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// If VITE_API_BASE_URL تعریف نشده باشد، از همان origin استفاده می‌کنیم تا درخواست‌ها روی دامنه جاری بروند
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -43,14 +44,33 @@ api.interceptors.request.use(
   }
 );
 
+const getLoginRedirectPath = () => {
+  try {
+    const path = window.location.pathname || '';
+    return path.startsWith('/admin') ? '/admin/login' : '/login';
+  } catch {
+    return '/login';
+  }
+};
+
 // Response interceptor to handle 401 errors and refresh token
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const loginRedirect = getLoginRedirectPath();
 
     // If error is not 401 or request already retried, reject
     if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    // If the original request did not include an Authorization header,
+    // it's likely an unauthenticated public request — do not treat its 401
+    // as a reason to purge tokens and force logout (avoids race conditions
+    // where a request fires before the auth header is attached).
+    const hadAuthHeader = !!originalRequest.headers?.Authorization;
+    if (!hadAuthHeader) {
       return Promise.reject(error);
     }
 
@@ -76,7 +96,7 @@ api.interceptors.response.use(
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = loginRedirect;
       return Promise.reject(error);
     }
 
@@ -109,7 +129,7 @@ api.interceptors.response.use(
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = loginRedirect;
 
       return Promise.reject(refreshError);
     }

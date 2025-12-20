@@ -4,7 +4,12 @@ Django settings for Talent Admission System
 
 from pathlib import Path
 from datetime import timedelta
+import logging
 from decouple import config
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +23,30 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Parse ALLOWED_HOSTS from .env and strip whitespace
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')]
+
+# Sentry configuration
+SENTRY_DSN = config('SENTRY_DSN', default=None)
+SENTRY_ENVIRONMENT = config('SENTRY_ENVIRONMENT', default='development')
+SENTRY_TRACES_SAMPLE_RATE = config('SENTRY_TRACES_SAMPLE_RATE', default=0.0, cast=float)
+SENTRY_PROFILES_SAMPLE_RATE = config('SENTRY_PROFILES_SAMPLE_RATE', default=0.0, cast=float)
+SENTRY_SEND_DEFAULT_PII = config('SENTRY_SEND_DEFAULT_PII', default=False, cast=bool)
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        profiles_sample_rate=SENTRY_PROFILES_SAMPLE_RATE,
+        send_default_pii=SENTRY_SEND_DEFAULT_PII,
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(),
+            LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.ERROR,
+            ),
+        ],
+    )
 
 # Application definition
 INSTALLED_APPS = [

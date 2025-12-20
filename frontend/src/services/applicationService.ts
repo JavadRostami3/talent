@@ -71,8 +71,12 @@ export interface ApplicationSubmissionRequest {
  * دریافت پرونده فعلی کاربر
  */
 export const getMyApplication = async (): Promise<Application> => {
-  const response = await api.get<Application>('/api/applications/my/');
-  return response.data;
+  const response = await api.get('/api/applications/');
+  const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+  if (!applications.length) {
+    throw new Error('Application not found');
+  }
+  return applications[0];
 };
 
 /**
@@ -117,7 +121,7 @@ export const updateApplication = async (
   id: number,
   data: Partial<Application>
 ): Promise<Application> => {
-  const response = await api.patch<Application>(`/api/applications/${id}/`, data);
+  const response = await api.patch<Application>(`/api/applications/${id}/update/`, data);
   return response.data;
 };
 
@@ -362,7 +366,7 @@ export const uploadDocument = async (
 ): Promise<ApplicationDocument> => {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('document_type', documentType);
+  formData.append('type', documentType);
   
   const response = await api.post<ApplicationDocument>(
     `/api/applications/${applicationId}/documents/`,
@@ -482,7 +486,7 @@ export const downloadDocument = async (documentId: number): Promise<Blob> => {
  * دریافت آمار برای پنل ادمین
  */
 export const getAdminStatistics = async (): Promise<StatisticsResponse> => {
-  const response = await api.get<StatisticsResponse>('/api/admin/statistics/');
+  const response = await api.get<StatisticsResponse>('/api/admin/university/statistics/');
   return response.data;
 };
 
@@ -667,9 +671,21 @@ export const calculateCompletionPercentage = (application: Application): number 
   
   // Documents (20%)
   total += 20;
-  const requiredDocs = ['NATIONAL_CARD', 'PERSONAL_PHOTO', 'BSC_TRANSCRIPT'];
-  const uploadedTypes = new Set(application.documents?.map(d => d.doc_type) || []);
-  const hasAllRequired = requiredDocs.every(type => uploadedTypes.has(type as DocumentType));
+  const uploadedTypes = new Set(
+    application.documents?.map(d => d.type || d.document_type || d.doc_type) || []
+  );
+  const identityDocs = ['NATIONAL_CARD', 'PERSONAL_PHOTO', 'ID_CARD'];
+  const hasIdentityDocs = identityDocs.every(type => uploadedTypes.has(type as DocumentType));
+  const bscRecord = application.education_records?.find(r => r.degree_level === 'BSC');
+  let eduDocsReady = false;
+  if (bscRecord?.status === 'GRADUATED') {
+    eduDocsReady = ['BSC_CERT', 'BSC_TRANSCRIPT'].every(type => uploadedTypes.has(type as DocumentType));
+  } else if (bscRecord?.status === 'STUDYING') {
+    eduDocsReady = ['BSC_TRANSCRIPT', 'ENROLLMENT_CERT'].every(type => uploadedTypes.has(type as DocumentType));
+  } else {
+    eduDocsReady = uploadedTypes.has('BSC_TRANSCRIPT' as DocumentType);
+  }
+  const hasAllRequired = hasIdentityDocs && eduDocsReady;
   if (hasAllRequired) {
     completed += 20;
   }
@@ -715,11 +731,30 @@ export const isApplicationReadyForSubmission = (application: Application): {
   }
   
   // Check required documents
-  const requiredDocs = ['NATIONAL_CARD', 'PERSONAL_PHOTO', 'BSC_TRANSCRIPT'];
-  const uploadedTypes = new Set(application.documents?.map(d => d.doc_type) || []);
-  const missingDocs = requiredDocs.filter(type => !uploadedTypes.has(type as DocumentType));
-  if (missingDocs.length > 0) {
-    missing.push(`مدارک لازم: ${missingDocs.join(', ')}`);
+  const uploadedTypes = new Set(
+    application.documents?.map(d => d.type || d.document_type || d.doc_type) || []
+  );
+  const identityDocs = ['NATIONAL_CARD', 'PERSONAL_PHOTO', 'ID_CARD'];
+  const missingIdentityDocs = identityDocs.filter(type => !uploadedTypes.has(type as DocumentType));
+  if (missingIdentityDocs.length > 0) {
+    missing.push(`مدارک شناسایی: ${missingIdentityDocs.join(', ')}`);
+  }
+
+  const bscRecord = application.education_records?.find(r => r.degree_level === 'BSC');
+  if (bscRecord?.status === 'GRADUATED') {
+    const missingEduDocs = ['BSC_CERT', 'BSC_TRANSCRIPT'].filter(
+      type => !uploadedTypes.has(type as DocumentType)
+    );
+    if (missingEduDocs.length > 0) {
+      missing.push(`مدارک تحصیلی کارشناسی: ${missingEduDocs.join(', ')}`);
+    }
+  } else if (bscRecord?.status === 'STUDYING') {
+    const missingEduDocs = ['BSC_TRANSCRIPT', 'ENROLLMENT_CERT'].filter(
+      type => !uploadedTypes.has(type as DocumentType)
+    );
+    if (missingEduDocs.length > 0) {
+      missing.push(`مدارک تحصیلی کارشناسی: ${missingEduDocs.join(', ')}`);
+    }
   }
   
   return {

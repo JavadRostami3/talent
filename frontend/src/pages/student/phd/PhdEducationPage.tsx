@@ -87,7 +87,7 @@ const PhdEducationPage = () => {
     setLoading(true);
     try {
       // ذخیره اطلاعات تحصیلی
-      await api.post(`/api/applicant/applications/${applicationId}/education/`, {
+      await api.post(`/api/applications/${applicationId}/education/`, {
         bsc: {
           field: data.bsc_field,
           graduation_date: `${data.bsc_graduation_year}-${data.bsc_graduation_month}-01`,
@@ -145,7 +145,7 @@ const PhdEducationPage = () => {
     formData.append('type', docType);
 
     try {
-      await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
+      await api.post(`/api/applications/${applicationId}/documents/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const progress = progressEvent.total

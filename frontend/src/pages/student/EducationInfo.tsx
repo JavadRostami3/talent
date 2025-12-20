@@ -91,11 +91,15 @@ const EducationInfo = () => {
       setLoading(true);
       
       const [appResponse, univResponse] = await Promise.all([
-        api.get('/api/applicant/applications/'),
+        api.get('/api/applications/'),
         api.get('/api/public/universities/'),
       ]);
       
-      const application = appResponse.data.results[0];
+      const applications = Array.isArray(appResponse.data) ? appResponse.data : appResponse.data.results || [];
+      const application = applications[0];
+      if (!application) {
+        throw new Error('Application not found');
+      }
       setRoundType(application.round_type);
       setUniversities(univResponse.data);
       
@@ -176,8 +180,9 @@ const EducationInfo = () => {
     try {
       setSaving(true);
       
-      const appResponse = await api.get('/api/applicant/applications/');
-      const applicationId = appResponse.data.results[0]?.id;
+      const appResponse = await api.get('/api/applications/');
+      const applications = Array.isArray(appResponse.data) ? appResponse.data : appResponse.data.results || [];
+      const applicationId = applications[0]?.id;
       
       if (!applicationId) {
         throw new Error('Application not found');
@@ -189,7 +194,7 @@ const EducationInfo = () => {
         educationRecords.push(mastersData);
       }
 
-      await api.post(`/api/applicant/applications/${applicationId}/education-records/`, educationRecords);
+      await api.post(`/api/applications/${applicationId}/education-records/`, educationRecords);
 
       toast({
         title: 'موفق',

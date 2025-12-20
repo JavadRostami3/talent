@@ -9,7 +9,7 @@ const ReportsGuide = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/admin/dashboard')}>
+        <Button variant="ghost" onClick={() => navigate('/admin')}>
           <ChevronRight className="h-5 w-5" />
         </Button>
         <div>
@@ -93,7 +93,7 @@ const ReportsGuide = () => {
         <Button onClick={() => navigate('/admin/university/applications')}>
           رفتن به لیست پرونده‌ها
         </Button>
-        <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
+        <Button variant="outline" onClick={() => navigate('/admin')}>
           بازگشت به داشبورد
         </Button>
       </div>

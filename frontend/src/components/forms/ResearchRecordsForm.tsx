@@ -67,7 +67,7 @@ const ResearchRecordsForm = ({
     setLoading(true);
     try {
       const response = await api.get<ResearchRecord[]>(
-        `/api/applicant/applications/${applicationId}/research-records/`
+        `/api/applications/${applicationId}/research-records/`
       );
       setRecords(response.data);
     } catch (error: any) {
@@ -91,7 +91,7 @@ const ResearchRecordsForm = ({
         citation_count: data.citation_count || null,
       };
 
-      await api.post(`/api/applicant/applications/${applicationId}/research-records/`, cleanData);
+      await api.post(`/api/applications/${applicationId}/research-records/`, cleanData);
 
       toast({
         title: 'ذخیره موفق',
@@ -118,7 +118,7 @@ const ResearchRecordsForm = ({
 
     try {
       await api.delete(
-        `/api/applicant/applications/${applicationId}/research-records/${recordId}/`
+        `/api/applications/${applicationId}/research-records/${recordId}/`
       );
 
       toast({

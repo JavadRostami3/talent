@@ -26,10 +26,11 @@ const RegistrationWizard = () => {
     setLoading(true);
     try {
       // Get user's application for current round
-      const response = await api.get<Application[]>('/api/applicant/applications/');
+      const response = await api.get<Application[]>('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
       
-      if (response.data.length > 0) {
-        const app = response.data[0];
+      if (applications.length > 0) {
+        const app = applications[0];
         setApplication(app);
       } else {
         // No application exists

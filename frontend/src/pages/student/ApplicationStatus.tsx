@@ -16,9 +16,10 @@ const ApplicationStatus = () => {
 
   const fetchApplicationStatus = async () => {
     try {
-      const response = await api.get('/api/applicant/applications/');
-      if (response.data.results && response.data.results.length > 0) {
-        setApplication(response.data.results[0]);
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        setApplication(applications[0]);
       }
     } catch (error) {
       toast({
@@ -41,15 +42,14 @@ const ApplicationStatus = () => {
       EDU_DOCS_UPLOADED: { label: 'مدارک تحصیلی بارگذاری شده', variant: 'secondary', icon: Clock },
       SUBMITTED: { label: 'ارسال شده', variant: 'default', icon: CheckCircle },
       UNDER_UNIVERSITY_REVIEW: { label: 'در حال بررسی (دانشگاه)', variant: 'default', icon: Clock },
-      UNIVERSITY_APPROVED: { label: 'تایید شده (دانشگاه)', variant: 'secondary', icon: CheckCircle },
-      UNIVERSITY_REJECTED: { label: 'رد شده (دانشگاه)', variant: 'destructive', icon: XCircle },
+      APPROVED_BY_UNIVERSITY: { label: 'تایید شده (دانشگاه)', variant: 'secondary', icon: CheckCircle },
+      REJECTED_BY_UNIVERSITY: { label: 'رد شده (دانشگاه)', variant: 'destructive', icon: XCircle },
+      RETURNED_FOR_CORRECTION: { label: 'برگشت برای اصلاح', variant: 'destructive', icon: XCircle },
       UNDER_FACULTY_REVIEW: { label: 'در حال بررسی (دانشکده)', variant: 'default', icon: Clock },
-      FACULTY_APPROVED: { label: 'تایید شده (دانشکده)', variant: 'secondary', icon: CheckCircle },
-      FACULTY_REJECTED: { label: 'رد شده (دانشکده)', variant: 'destructive', icon: XCircle },
-      ACCEPTED: { label: 'پذیرفته شده', variant: 'default', icon: CheckCircle },
-      REJECTED: { label: 'رد شده', variant: 'destructive', icon: XCircle },
-      HAS_DEFICIENCY: { label: 'دارای نقص', variant: 'destructive', icon: XCircle },
-      DEFICIENCY_RESOLVED: { label: 'نقص رفع شده', variant: 'secondary', icon: CheckCircle },
+      FACULTY_REVIEW_COMPLETED: { label: 'بررسی دانشکده تکمیل شد', variant: 'secondary', icon: CheckCircle },
+      COMPLETED: { label: 'تکمیل شده', variant: 'secondary', icon: CheckCircle },
+      INELIGIBLE: { label: 'فاقد شرایط', variant: 'destructive', icon: XCircle },
+      DELETED: { label: 'حذف شده', variant: 'destructive', icon: XCircle },
     };
 
     return statusMap[status] || { label: status, variant: 'default', icon: Clock };

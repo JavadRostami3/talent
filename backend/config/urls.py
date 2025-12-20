@@ -13,6 +13,7 @@ admin.site.site_title = "سامانه ثبت‌نام و مصاحبه"
 admin.site.index_title = "مدیریت سامانه"
 
 urlpatterns = [
+    path('django-admin/', admin.site.urls),
     path('admin/', admin.site.urls),
     
     # API Documentation
@@ -28,7 +29,12 @@ urlpatterns = [
     path('api/', include('apps.api.programs_urls')),  # Programs for selection
     path('api/', include('apps.api.applications_urls')),  # Applicant applications management
     path('api/', include('apps.api.research_urls')),  # Unified Research Records API
+    path('api/', include('apps.api.documents_urls')),  # Applicant documents
     path('api/admin/', include('apps.api.admin_urls')),  # Admin endpoints
+    # Legacy/compat endpoints expected by frontend
+    path('api/applicant/', include('apps.api.applications_urls')),
+    path('api/public/', include('apps.api.core_urls')),
+    path('api/public/', include('apps.api.programs_urls')),
 ]
 
 # Serve media files in development

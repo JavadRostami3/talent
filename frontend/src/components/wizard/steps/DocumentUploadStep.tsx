@@ -10,17 +10,20 @@ import { FileUpload } from '@/components/ui/file-upload';
 import applicationService from '@/services/applicationService';
 import type { DocumentRecord, DocumentType } from '@/types/models';
 
-const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+const DOCUMENT_TYPE_LABELS: Partial<Record<DocumentType, string>> = {
   PERSONAL_PHOTO: 'عکس پرسنلی',
   NATIONAL_CARD: 'کارت ملی',
+  ID_CARD: 'شناسنامه',
   BSC_TRANSCRIPT: 'ریز نمرات کارشناسی',
-  BSC_CERTIFICATE: 'مدرک کارشناسی',
+  BSC_CERT: 'مدرک کارشناسی',
   MSC_TRANSCRIPT: 'ریز نمرات کارشناسی ارشد',
-  MSC_CERTIFICATE: 'مدرک کارشناسی ارشد',
-  RECOMMENDATION_LETTER: 'توصیه‌نامه',
-  RESEARCH_PROPOSAL: 'پروپوزال پژوهشی',
-  LANGUAGE_CERTIFICATE: 'مدرک زبان',
-  WORK_EXPERIENCE: 'سوابق شغلی',
+  MSC_CERT: 'مدرک کارشناسی ارشد',
+  MSC_EXCELLENCE_CERT: 'فرم رتبه ممتاز ارشد',
+  EXCELLENCE_CERT: 'گواهی دانشجوی ممتاز',
+  GRADUATION_CERT: 'گواهی فارغ‌التحصیلی',
+  ENROLLMENT_CERT: 'گواهی اشتغال به تحصیل',
+  OLYMPIAD_CERT: 'فرم رتبه المپیاد علمی',
+  ENGLISH_TEST_CERT: 'مدرک زبان انگلیسی',
   OTHER: 'سایر مدارک',
 };
 
@@ -44,9 +47,10 @@ const DocumentUploadStep = ({ applicationId, roundType, onComplete }: DocumentUp
   const requiredDocTypes: DocumentType[] = [
     'PERSONAL_PHOTO',
     'NATIONAL_CARD',
+    'ID_CARD',
     'BSC_TRANSCRIPT',
-    'BSC_CERTIFICATE',
-    ...(isPhdRound ? ['MSC_TRANSCRIPT', 'MSC_CERTIFICATE'] as DocumentType[] : []),
+    'BSC_CERT',
+    ...(isPhdRound ? ['MSC_TRANSCRIPT', 'MSC_CERT'] as DocumentType[] : []),
   ];
 
   useEffect(() => {
@@ -180,11 +184,13 @@ const DocumentUploadStep = ({ applicationId, roundType, onComplete }: DocumentUp
 
   const handleComplete = () => {
     // بررسی کامل بودن مدارک الزامی
-    const uploadedTypes = documents.map(d => d.document_type);
+    const uploadedTypes = documents.map(d => d.type || d.document_type || d.doc_type);
     const missingDocs = requiredDocTypes.filter(type => !uploadedTypes.includes(type));
 
     if (missingDocs.length > 0) {
-      const missingLabels = missingDocs.map(type => DOCUMENT_TYPE_LABELS[type]).join('، ');
+      const missingLabels = missingDocs
+        .map(type => DOCUMENT_TYPE_LABELS[type] || type)
+        .join('، ');
       toast({
         title: 'ناقص',
         description: `لطفاً مدارک زیر را بارگذاری کنید: ${missingLabels}`,
@@ -197,7 +203,7 @@ const DocumentUploadStep = ({ applicationId, roundType, onComplete }: DocumentUp
   };
 
   const getDocumentStatus = (docType: DocumentType) => {
-    const uploaded = documents.find(d => d.document_type === docType);
+    const uploaded = documents.find(d => (d.type || d.document_type || d.doc_type) === docType);
     const isRequired = requiredDocTypes.includes(docType);
 
     if (uploaded) {
@@ -329,7 +335,9 @@ const DocumentUploadStep = ({ applicationId, roundType, onComplete }: DocumentUp
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(DOCUMENT_TYPE_LABELS).map(([type, label]) => {
             const status = getDocumentStatus(type as DocumentType);
-            const uploaded = documents.find(d => d.document_type === type);
+            const uploaded = documents.find(
+              d => (d.type || d.document_type || d.doc_type) === type
+            );
 
             return (
               <Card

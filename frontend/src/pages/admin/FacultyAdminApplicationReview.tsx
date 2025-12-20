@@ -63,7 +63,7 @@ interface ApplicationDetail {
     start_year: number;
     end_year: number;
   }>;
-  research_records: Array<{
+  research_records?: Array<{
     record_type: string;
     title: string;
     description: string;
@@ -71,7 +71,8 @@ interface ApplicationDetail {
     score: number;
   }>;
   documents: Array<{
-    document_type: string;
+    type?: string;
+    document_type?: string;
     file_url: string;
     uploaded_at: string;
   }>;
@@ -99,7 +100,7 @@ const FacultyAdminApplicationReview = () => {
   const fetchApplication = async () => {
     setLoading(true);
     try {
-      const response = await api.get<ApplicationDetail>(`/api/accounts/applications/${id}/`);
+      const response = await api.get<ApplicationDetail>(`/api/admin/faculty/applications/${id}/`);
       setApplication(response.data);
 
       if (response.data.faculty_review_comment) {
@@ -326,7 +327,7 @@ const FacultyAdminApplicationReview = () => {
           </Card>
 
           {/* Research Records (for PHD only) */}
-          {isPhdRound && application.research_records.length > 0 && (
+          {isPhdRound && (application.research_records?.length || 0) > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -336,7 +337,7 @@ const FacultyAdminApplicationReview = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {application.research_records.map((record, idx) => (
+                  {(application.research_records || []).map((record, idx) => (
                     <div key={idx} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <Badge>{researchTypeLabels[record.record_type]}</Badge>
@@ -374,7 +375,7 @@ const FacultyAdminApplicationReview = () => {
                 {application.documents.map((doc, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{doc.document_type}</p>
+                      <p className="font-medium">{doc.type || doc.document_type}</p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(doc.uploaded_at).toLocaleDateString('fa-IR')}
                       </p>

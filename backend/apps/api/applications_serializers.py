@@ -1,15 +1,27 @@
 """
 Serializers for applications app
 """
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from apps.applications.models import (
-    Application, ApplicationChoice, ApplicationEducationRecord,
+    Application,
+    ApplicationChoice,
+    ApplicationEducationRecord,
+    EducationScoring,
     RegistrationPayment,
-    ResearchArticle, Patent, FestivalAward, ConferenceArticle, Book,
-    MastersThesis, OlympiadRecord, LanguageCertificate, Interview
+    ResearchArticle,
+    Patent,
+    FestivalAward,
+    ConferenceArticle,
+    Book,
+    MastersThesis,
+    OlympiadRecord,
+    LanguageCertificate,
+    Interview,
 )
 from apps.api.admissions_serializers import ProgramListSerializer
 from apps.api.core_serializers import UniversitySerializer
+from apps.documents.models import ApplicationDocument
 
 
 class BaseEducationRecordSerializer(serializers.ModelSerializer):
@@ -79,22 +91,6 @@ class ApplicationEducationRecordSerializer(serializers.ModelSerializer):
             serializer = PhDEducationRecordSerializer(instance, context=self.context)
         
         return serializer.data
-
-
-class ApplicationChoiceSerializer(serializers.ModelSerializer):
-    """Serializer for ApplicationChoice model"""
-    program = ProgramListSerializer(read_only=True)
-    program_id = serializers.IntegerField(write_only=True)
-    admission_status_display = serializers.CharField(source='get_admission_status_display', read_only=True)
-    
-    class Meta:
-        model = ApplicationChoice
-        fields = [
-            'id', 'application', 'program', 'program_id', 'priority',
-            'admission_status', 'admission_status_display',
-            'admission_priority_result', 'admission_note'
-        ]
-        read_only_fields = ['id', 'admission_status', 'admission_priority_result', 'admission_note']
 
 
 class ResearchArticleSerializer(serializers.ModelSerializer):
@@ -206,7 +202,7 @@ class ApplicationChoiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'admission_status', 'admission_priority_result', 'admission_note']
 
 
-class ApplicationListSerializer(serializers.ModelSerializer):
+class AdminApplicationListSerializer(serializers.ModelSerializer):
     """
     Serializer برای نمایش لیست applications با اطلاعات کامل برای جدول ادمین
     """
@@ -273,39 +269,77 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             'program__department'
         ).order_by('priority').first()
         
-        if first_choice:
-            return {
-                'faculty_id': first_choice.program.faculty.id,
-                'faculty_name': first_choice.program.faculty.name,
-                'department_id': first_choice.program.department.id,
-                'department_name': first_choice.program.department.name,
-            }
+        if not first_choice:
+            return None
+
+        try:
+            program = first_choice.program
+            faculty = program.faculty
+            department = program.department
+        except ObjectDoesNotExist:
+            return None
+
+        if not program or not faculty or not department:
+            return None
+
+        return {
+            'faculty_id': faculty.id,
+            'faculty_name': faculty.name,
+            'department_id': department.id,
+            'department_name': department.name,
+        }
         return None
     
     def get_selected_program(self, obj):
         """رشته انتخابی با اولویت اول"""
         first_choice = obj.choices.select_related('program').order_by('priority').first()
         
-        if first_choice:
-            return {
-                'program_id': first_choice.program.id,
-                'program_name': first_choice.program.name,
-                'program_code': first_choice.program.code,
-                'orientation': first_choice.program.orientation,
-                'priority': first_choice.priority,
-            }
+        if not first_choice:
+            return None
+
+        try:
+            program = first_choice.program
+        except ObjectDoesNotExist:
+            return None
+
+        if not program:
+            return None
+
+        return {
+            'program_id': program.id,
+            'program_name': program.name,
+            'program_code': program.code,
+            'orientation': program.orientation,
+            'priority': first_choice.priority,
+        }
         return None
     
     def get_university_info(self, obj):
         """دانشگاه محل تحصیل + ضریب"""
-        if obj.university_of_study:
-            weight = obj.university_weight.weight if obj.university_weight else 1.0
-            return {
-                'university_id': obj.university_of_study.id,
-                'university_name': obj.university_of_study.name,
-                'university_code': obj.university_of_study.code,
-                'weight': weight,
-            }
+        if not obj.university_of_study_id:
+            return None
+
+        try:
+            university = obj.university_of_study
+        except ObjectDoesNotExist:
+            return None
+
+        if not university:
+            return None
+
+        weight = 1.0
+        if obj.university_weight_id:
+            try:
+                weight = obj.university_weight.weight
+            except ObjectDoesNotExist:
+                weight = 1.0
+
+        return {
+            'university_id': university.id,
+            'university_name': university.name,
+            'university_code': university.code,
+            'weight': weight,
+        }
         return None
     
     def get_rank_status(self, obj):
@@ -325,6 +359,33 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             'round_type': obj.round.type,
             'year': obj.round.year,
         }
+
+class ApplicationDocumentSimpleSerializer(serializers.ModelSerializer):
+    """نمایش خلاصه مدرک با لینک فایل"""
+    type_display = serializers.CharField(source='get_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ApplicationDocument
+        fields = [
+            'id',
+            'type',
+            'type_display',
+            'status',
+            'status_display',
+            'file_url',
+            'uploaded_at',
+            'reviewed_at',
+        ]
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.file.url)
+        return obj.file.url
+
+
 class ApplicationDetailSerializer(serializers.ModelSerializer):
     """
     Serializer برای نمایش جزئیات کامل application برای صفحه جزئیات
@@ -362,8 +423,10 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
             'status', 'status_display', 'university_of_study',
             'university_weight', 'rank_percentile_group', 'total_score',
             'score_calculated_at',
-            'university_review_status', 'university_reviewed_by', 'university_reviewed_at',
-            'faculty_review_completed', 'faculty_reviewed_by', 'faculty_reviewed_at',
+            'university_review_status', 'university_review_comment',
+            'university_reviewed_by', 'university_reviewed_at',
+            'faculty_review_completed', 'faculty_review_comment',
+            'faculty_reviewed_by', 'faculty_reviewed_at',
             'admission_overall_status', 'admission_result_published_at',
             'created_at', 'updated_at',
             'choices', 'education_records',
@@ -387,10 +450,71 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
             'national_id': obj.applicant.user.national_id,
             'first_name': obj.applicant.user.first_name,
             'last_name': obj.applicant.user.last_name,
+            'user': {
+                'id': obj.applicant.user.id,
+                'national_id': obj.applicant.user.national_id,
+                'first_name': obj.applicant.user.first_name,
+                'last_name': obj.applicant.user.last_name,
+                'father_name': obj.applicant.user.father_name,
+                'email': obj.applicant.user.email,
+                'mobile': obj.applicant.user.mobile,
+                'gender': obj.applicant.user.gender,
+                'birth_year': obj.applicant.user.birth_year,
+                'birth_place': obj.applicant.user.birth_place,
+            },
         }
 
 
-class ApplicationListSerializer(serializers.ModelSerializer):
+class AdminApplicationDetailSerializer(ApplicationDetailSerializer):
+    """جزئیات کامل برای پنل ادمین با مدارک و امتیازدهی"""
+    documents = ApplicationDocumentSimpleSerializer(many=True, read_only=True)
+    education_scoring = serializers.SerializerMethodField()
+
+    class Meta(ApplicationDetailSerializer.Meta):
+        fields = ApplicationDetailSerializer.Meta.fields + [
+            'documents',
+            'education_scoring',
+        ]
+
+    def get_education_scoring(self, obj):
+        """خلاصه امتیازدهی تحصیلی در صورت وجود"""
+        if hasattr(obj, 'education_scoring'):
+            return {
+                'total_score': obj.education_scoring.total_score,
+                'bsc_gpa_university_score': obj.education_scoring.bsc_gpa_university_score,
+                'msc_gpa_university_score': obj.education_scoring.msc_gpa_university_score,
+            }
+        return None
+
+
+class ApplicantApplicationDetailSerializer(ApplicationDetailSerializer):
+    """جزئیات پرونده برای داوطلب با مدارک"""
+    documents = ApplicationDocumentSimpleSerializer(many=True, read_only=True)
+
+    class Meta(ApplicationDetailSerializer.Meta):
+        fields = ApplicationDetailSerializer.Meta.fields + [
+            'documents',
+        ]
+
+
+class ProgramApplicantSerializer(serializers.Serializer):
+    """رکورد داوطلبان واجد شرایط برای تخصیص نهایی"""
+    application_id = serializers.IntegerField()
+    tracking_code = serializers.CharField()
+    applicant_name = serializers.CharField()
+    national_id = serializers.CharField()
+    priority = serializers.IntegerField()
+    gpa = serializers.FloatField(required=False, allow_null=True)
+    gpa_display = serializers.CharField()
+    university_name = serializers.CharField(allow_blank=True)
+    rank_status = serializers.CharField(allow_null=True)
+    total_score = serializers.FloatField()
+    education_score = serializers.FloatField(required=False, allow_null=True)
+    admission_overall_status = serializers.CharField(allow_blank=True)
+    status = serializers.CharField()
+
+
+class ApplicantApplicationListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for application listings"""
     applicant_name = serializers.CharField(source='applicant.user.get_full_name', read_only=True)
     applicant_national_id = serializers.CharField(source='applicant.user.national_id', read_only=True)

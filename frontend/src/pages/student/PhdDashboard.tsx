@@ -57,8 +57,6 @@ const PhdDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const completionPercentage = Object.values(stats).filter(Boolean).length / Object.keys(stats).length * 100;
-
   useEffect(() => {
     fetchApplication();
   }, []);
@@ -109,6 +107,64 @@ const PhdDashboard = () => {
     setStats(newStats);
   };
 
+  const checklistItems = [
+    {
+      key: 'personalInfo',
+      title: 'اطلاعات شخصی',
+      description: 'تکمیل اطلاعات هویتی و شناسنامه‌ای',
+      completed: stats.personalInfoComplete,
+      link: '/phd/personal-info',
+    },
+    {
+      key: 'identityDocs',
+      title: 'مدارک شناسایی',
+      description: 'آپلود عکس، کارت ملی و شناسنامه',
+      completed: stats.identityDocsComplete,
+      link: '/phd/documents?category=identity',
+    },
+    {
+      key: 'education',
+      title: 'سوابق تحصیلی',
+      description: 'ثبت اطلاعات و مدارک کارشناسی و ارشد',
+      completed: stats.bscEducationComplete && stats.mscEducationComplete && stats.educationDocsComplete,
+      link: '/phd/education',
+    },
+    {
+      key: 'research',
+      title: 'سوابق پژوهشی',
+      description: 'مقالات، اختراعات و جوایز علمی',
+      completed: stats.researchRecordsAdded,
+      link: '/phd/research-records',
+    },
+    {
+      key: 'language',
+      title: 'المپیاد و زبان',
+      description: 'ثبت سوابق المپیاد علمی یا مدرک زبان',
+      completed: stats.olympiadOrLanguageAdded,
+      link: '/phd/olympiad-language',
+    },
+    {
+      key: 'program',
+      title: 'انتخاب رشته',
+      description: 'انتخاب حداکثر ۳ رشته با اولویت',
+      completed: stats.programSelected,
+      link: '/phd/program-selection',
+    },
+    {
+      key: 'interview',
+      title: 'مصاحبه',
+      description: application?.interview?.scheduled_date
+        ? `زمان‌بندی: ${new Date(application.interview.scheduled_date).toLocaleDateString('fa-IR')}`
+        : 'در انتظار زمان‌بندی مصاحبه',
+      completed: application?.interview?.status === 'COMPLETED',
+      link: undefined,
+    },
+  ];
+
+  const completedCount = checklistItems.filter((item) => item.completed).length;
+  const totalCount = checklistItems.length;
+  const completionPercentage = totalCount ? (completedCount / totalCount) * 100 : 0;
+
   const getStatusBadge = (status?: string) => {
     const statusConfig: { [key: string]: { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
       NEW: { label: 'جدید', variant: 'secondary' },
@@ -137,7 +193,7 @@ const PhdDashboard = () => {
 
   if (!application) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto px-4 py-6">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -240,93 +296,61 @@ const PhdDashboard = () => {
   const canSubmit = application.status === 'NEW' || application.status === 'PERSONAL_INFO_COMPLETED';
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto px-4 py-6 md:p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">داشبورد ({application.tracking_code})</h1>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold break-words">داشبورد ({application.tracking_code})</h1>
+          <p className="text-sm text-muted-foreground">مرکز کنترل پرونده دکتری</p>
         </div>
-        {getStatusBadge(application.status)}
+        <div className="flex items-center gap-3">
+          {getStatusBadge(application.status)}
+        </div>
       </div>
 
       {/* Checklist */}
       <Card>
-        <CardHeader>
+        <CardHeader className="space-y-1">
           <CardTitle>چک‌لیست ثبت‌نام</CardTitle>
-          <CardDescription>
-            مراحل اصلی تکمیل پرونده دکتری
-          </CardDescription>
+          <CardDescription>مراحل اصلی تکمیل پرونده دکتری</CardDescription>
+          <div className="space-y-2">
+            <Progress value={completionPercentage} />
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>پیشرفت: {Math.round(completionPercentage)}%</span>
+              <span>{completedCount} از {totalCount} مرحله تکمیل شده</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/personal-info')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.personalInfoComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.personalInfoComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={stats.personalInfoComplete ? 'line-through text-muted-foreground' : ''}>تکمیل اطلاعات شخصی</span>
+          <div className="grid gap-3">
+            {checklistItems.map((item) => {
+              const badgeLabel = item.completed ? 'تکمیل شده' : 'در انتظار تکمیل';
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => item.link && navigate(item.link)}
+                  className="w-full text-right rounded-xl border border-slate-200 bg-white hover:border-primary/40 hover:shadow-sm transition-all p-3 flex items-start justify-between gap-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      item.completed ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
+                    }`}>
+                      {item.completed && <CheckCircle2 className="h-3 w-3 text-white" />}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm text-slate-900">{item.title}</p>
+                      <p className="text-xs text-muted-foreground leading-5">{item.description}</p>
+                    </div>
+                  </div>
+                  <Badge variant={item.completed ? 'default' : 'secondary'}>{badgeLabel}</Badge>
+                </button>
+              );
+            })}
           </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/documents?category=identity')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.identityDocsComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.identityDocsComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={stats.identityDocsComplete ? 'line-through text-muted-foreground' : ''}>آپلود مدارک شناسایی</span>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/education')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.bscEducationComplete && stats.mscEducationComplete && stats.educationDocsComplete ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.bscEducationComplete && stats.mscEducationComplete && stats.educationDocsComplete && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={(stats.bscEducationComplete && stats.mscEducationComplete && stats.educationDocsComplete) ? 'line-through text-muted-foreground' : ''}>ثبت سوابق تحصیلی</span>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/research-records')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.researchRecordsAdded ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.researchRecordsAdded && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={stats.researchRecordsAdded ? 'line-through text-muted-foreground' : ''}>ثبت سوابق پژوهشی</span>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/olympiad-language')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.olympiadOrLanguageAdded ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.olympiadOrLanguageAdded && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={stats.olympiadOrLanguageAdded ? 'line-through text-muted-foreground' : ''}>ثبت المپیاد یا مدرک زبان</span>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/phd/program-selection')}>
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              stats.programSelected ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {stats.programSelected && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={stats.programSelected ? 'line-through text-muted-foreground' : ''}>انتخاب رشته</span>
-          </div>
-          
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-              application.interview?.status === 'COMPLETED' ? 'bg-green-500 border-green-500' : 'border-muted-foreground'
-            }`}>
-              {application.interview?.status === 'COMPLETED' && <CheckCircle2 className="h-4 w-4 text-white" />}
-            </div>
-            <span className={application.interview?.status === 'COMPLETED' ? 'line-through text-muted-foreground' : ''}>
-              شرکت در مصاحبه {application.interview?.scheduled_date && `(${new Date(application.interview.scheduled_date).toLocaleDateString('fa-IR')})`}
-            </span>
-          </div>
-          
           <Separator className="my-2" />
-          
           <div className="text-center text-sm text-muted-foreground">
-            {Object.values(stats).filter(Boolean).length + (application.interview?.status === 'COMPLETED' ? 1 : 0)} از {Object.keys(stats).length + 1} مرحله تکمیل شده
+            پس از تکمیل همه مراحل، گزینه ارسال نهایی فعال می‌شود.
           </div>
         </CardContent>
       </Card>
@@ -355,7 +379,7 @@ const PhdDashboard = () => {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {canSubmit && (
           <Button
             onClick={handleSubmitApplication}
@@ -372,6 +396,7 @@ const PhdDashboard = () => {
           variant="outline"
           size="lg"
           onClick={() => navigate('/student/status')}
+          className="flex-1 md:flex-none"
         >
           <Eye className="mr-2 h-5 w-5" />
           مشاهده وضعیت

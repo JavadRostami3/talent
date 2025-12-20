@@ -145,11 +145,11 @@ const ProgramSelector = ({
     setLoading(true);
     try {
       // Delete existing choices
-      await api.delete(`/api/applicant/applications/${applicationId}/choices/`);
+      await api.delete(`/api/applications/${applicationId}/choices/`);
 
       // Create new choices
       for (const program of selectedPrograms) {
-        await api.post(`/api/applicant/applications/${applicationId}/choices/`, {
+        await api.post(`/api/applications/${applicationId}/choices/`, {
           program_id: program.id,
           priority: program.priority,
         });

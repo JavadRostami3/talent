@@ -70,10 +70,8 @@ const PersonalInfo = () => {
     setLoading(true);
 
     try {
-      // Update user info
-      const userResponse = await api.patch(`/api/accounts/users/${user?.id}/`, {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+      // Update current user profile (user + applicant profile fields)
+      await api.patch('/api/accounts/profile/update/', {
         father_name: formData.father_name,
         birth_certificate_number: formData.birth_certificate_number,
         birth_certificate_serial: formData.birth_certificate_serial,
@@ -82,19 +80,16 @@ const PersonalInfo = () => {
         birth_year: formData.birth_year,
         birth_place: formData.birth_place,
         military_status: formData.military_status,
-      });
-
-      // Update profile
-      await api.patch(`/api/accounts/profiles/${user?.id}/`, {
         phone: formData.phone,
         address: formData.address,
       });
 
       // Update application status
-      const appsResponse = await api.get('/api/applicant/applications/');
-      if (appsResponse.data.length > 0) {
-        const app = appsResponse.data[0];
-        await api.patch(`/api/applicant/applications/${app.id}/update/`, {
+      const appsResponse = await api.get('/api/applications/');
+      const applications = Array.isArray(appsResponse.data) ? appsResponse.data : appsResponse.data.results || [];
+      if (applications.length > 0) {
+        const app = applications[0];
+        await api.patch(`/api/applications/${app.id}/update/`, {
           status: 'PERSONAL_INFO_COMPLETED',
         });
       }

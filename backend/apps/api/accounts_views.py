@@ -10,6 +10,7 @@ from apps.accounts.models import User, ApplicantProfile, AdminPermission
 from apps.api.accounts_serializers import (
     UserSerializer,
     ApplicantProfileSerializer,
+    ApplicantProfileUpdateSerializer,
     AdminPermissionSerializer,
     AdminPermissionCreateUpdateSerializer,
     ProfileUpdateSerializer
@@ -35,6 +36,14 @@ def current_user_profile(request):
         'mobile': user.mobile,
         'role': user.role,
     }
+
+    try:
+        applicant_profile = user.profile
+        profile_data['address'] = applicant_profile.address
+        profile_data['phone'] = applicant_profile.phone
+    except ApplicantProfile.DoesNotExist:
+        profile_data['address'] = ''
+        profile_data['phone'] = ''
     
     return Response(profile_data)
 
@@ -53,7 +62,24 @@ def update_user_profile(request):
     
     if serializer.is_valid():
         serializer.save()
-        # بازگشت اطلاعات کامل کاربر
+        profile_updates = {}
+        if 'address' in request.data:
+            profile_updates['address'] = request.data.get('address')
+        if 'phone' in request.data:
+            profile_updates['phone'] = request.data.get('phone')
+
+        if profile_updates:
+            profile, _ = ApplicantProfile.objects.get_or_create(user=user)
+            profile_serializer = ApplicantProfileUpdateSerializer(
+                profile,
+                data=profile_updates,
+                partial=True
+            )
+            if profile_serializer.is_valid():
+                profile_serializer.save()
+            else:
+                return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         user_serializer = UserSerializer(user)
         return Response(user_serializer.data)
     

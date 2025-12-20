@@ -45,7 +45,7 @@ const DocumentsUpload = () => {
     education: [
       { type: 'BSC_CERT', label: 'مدرک کارشناسی', required: true },
       { type: 'BSC_TRANSCRIPT', label: 'ریزنمرات کارشناسی', required: true },
-      { type: 'BSC_EXCELLENCE_CERT', label: 'گواهی رتبه ممتاز کارشناسی', required: true },
+      { type: 'EXCELLENCE_CERT', label: 'گواهی رتبه ممتاز کارشناسی', required: true },
     ],
   };
 
@@ -55,9 +55,10 @@ const DocumentsUpload = () => {
 
   const fetchApplication = async () => {
     try {
-      const response = await api.get('/api/applicant/applications/');
-      if (response.data.length > 0) {
-        const app = response.data[0];
+      const response = await api.get('/api/applications/');
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        const app = applications[0];
         setApplicationId(app.id);
         setDocuments(app.documents || []);
       }
@@ -85,7 +86,7 @@ const DocumentsUpload = () => {
       setUploadingType(type);
       setUploadProgress({ ...uploadProgress, [type]: 0 });
 
-      const response = await api.post(`/api/applicant/applications/${applicationId}/documents/`, formData, {
+      const response = await api.post(`/api/applications/${applicationId}/documents/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -110,8 +111,8 @@ const DocumentsUpload = () => {
         const identityDocs = documents.filter(d => 
           ['PERSONAL_PHOTO', 'NATIONAL_CARD', 'ID_CARD'].includes(d.type)
         );
-        if (identityDocs.length >= 2) {
-          await api.patch(`/api/applicant/applications/${applicationId}/update/`, {
+        if (identityDocs.length >= 3) {
+          await api.patch(`/api/applications/${applicationId}/update/`, {
             status: 'IDENTITY_DOCS_UPLOADED',
           });
         }
@@ -120,7 +121,7 @@ const DocumentsUpload = () => {
           ['BSC_CERT', 'BSC_TRANSCRIPT'].includes(d.type)
         );
         if (eduDocs.length >= 2) {
-          await api.patch(`/api/applicant/applications/${applicationId}/update/`, {
+          await api.patch(`/api/applications/${applicationId}/update/`, {
             status: 'EDU_DOCS_UPLOADED',
           });
         }

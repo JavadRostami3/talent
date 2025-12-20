@@ -87,11 +87,11 @@ const ApplicationsTable = ({
 
   return (
     <div className="border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader>
+      <div className="overflow-x-auto">
+        <Table className="min-w-[640px]">
+          <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="font-bold">ردیف</TableHead>
-            <TableHead className="font-bold min-w-[200px]">مشخصات داوطلب</TableHead>
+            <TableHead className="font-bold min-w-[220px]">مشخصات داوطلب</TableHead>
             <TableHead className="font-bold min-w-[180px]">دانشکده / گروه</TableHead>
             <TableHead className="font-bold min-w-[200px]">رشته انتخابی</TableHead>
             <TableHead className="font-bold min-w-[200px]">دانشگاه محل تحصیل</TableHead>
@@ -114,11 +114,8 @@ const ApplicationsTable = ({
               </TableCell>
             </TableRow>
           ) : (
-            applications.map((app, index) => (
+            applications.map((app) => (
               <TableRow key={app.id} className="hover:bg-muted/30">
-                {/* ردیف */}
-                <TableCell className="font-medium">{index + 1}</TableCell>
-
                 {/* مشخصات داوطلب */}
                 <TableCell>
                   <div className="space-y-1">
@@ -236,7 +233,7 @@ const ApplicationsTable = ({
 
                 {/* عملیات */}
                 <TableCell className="text-center">
-                  <Button size="sm" variant="outline" onClick={() => onViewDetails(app.id)}>
+                  <Button size="sm" variant="outline" onClick={() => onViewDetails(app.id)} className="w-full sm:w-auto whitespace-nowrap">
                     <Eye className="h-4 w-4 ml-1" />
                     مشاهده
                   </Button>
@@ -247,7 +244,8 @@ const ApplicationsTable = ({
         </TableBody>
       </Table>
     </div>
-  );
+  </div>
+);
 };
 
 export default ApplicationsTable;

@@ -59,11 +59,12 @@ const Dashboard = () => {
     setLoading(true);
     try {
       console.log('📡 Fetching applications...');
-      const response = await api.get<Application[]>('/api/applicant/applications/');
+      const response = await api.get<Application[]>('/api/applications/');
       console.log('✅ Response:', response.data);
       
-      if (response.data.length > 0) {
-        const app = response.data[0];
+      const applications = Array.isArray(response.data) ? response.data : response.data.results || [];
+      if (applications.length > 0) {
+        const app = applications[0];
         setApplication(app);
         console.log('✅ Application found:', app);
         

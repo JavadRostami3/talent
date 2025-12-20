@@ -35,7 +35,7 @@ const RouteGuard = ({ children, allowedRoundTypes, redirectTo }: RouteGuardProps
 
   // Not applicant role
   if (user?.role !== 'APPLICANT') {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   // اگر round_type ندارد، به صفحه اصلی برگردد

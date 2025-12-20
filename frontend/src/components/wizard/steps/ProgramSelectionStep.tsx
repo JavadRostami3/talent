@@ -9,7 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, Search, Plus, Trash2, GripVertical, CheckCircle2, AlertCircle } from 'lucide-react';
 import applicationService from '@/services/applicationService';
 import api from '@/services/api';
-import type { Program, Choice, University, DegreeLevel } from '@/types/models';
+import type { Program, Choice, Faculty, DegreeLevel } from '@/types/models';
 
 interface ProgramSelectionStepProps {
   applicationId: number;
@@ -19,14 +19,14 @@ interface ProgramSelectionStepProps {
 const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionStepProps) => {
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
-  const [universities, setUniversities] = useState<University[]>([]);
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
   const [choices, setChoices] = useState<Choice[]>([]);
 
   // فیلترها
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUniversity, setSelectedUniversity] = useState<number | ''>('');
+  const [selectedFaculty, setSelectedFaculty] = useState<number | ''>('');
   const [selectedDegree, setSelectedDegree] = useState<DegreeLevel | ''>('');
 
   const MAX_CHOICES = 3;
@@ -37,14 +37,14 @@ const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionSte
 
   useEffect(() => {
     applyFilters();
-  }, [searchTerm, selectedUniversity, selectedDegree, programs]);
+  }, [searchTerm, selectedFaculty, selectedDegree, programs]);
 
   const fetchData = async () => {
     setFetchingData(true);
     try {
-      // بارگذاری دانشگاه‌ها
-      const univResponse = await api.get('/api/universities/');
-      setUniversities(univResponse.data.results || univResponse.data);
+      // بارگذاری دانشکده‌ها
+      const facResponse = await api.get('/api/core/faculties/');
+      setFaculties(facResponse.data.results || facResponse.data);
 
       // بارگذاری برنامه‌ها
       const progResponse = await api.get('/api/programs/');
@@ -72,16 +72,22 @@ const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionSte
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         p =>
-          p.name_fa.toLowerCase().includes(term) ||
-          p.name_en.toLowerCase().includes(term) ||
-          p.department_name_fa?.toLowerCase().includes(term) ||
-          p.faculty_name_fa?.toLowerCase().includes(term)
+          p.name.toLowerCase().includes(term) ||
+          p.code?.toLowerCase().includes(term) ||
+          p.orientation?.toLowerCase().includes(term) ||
+          (typeof p.department === 'object' && p.department.name.toLowerCase().includes(term)) ||
+          (typeof p.faculty === 'object' && p.faculty.name.toLowerCase().includes(term))
       );
     }
 
-    // فیلتر دانشگاه
-    if (selectedUniversity) {
-      filtered = filtered.filter(p => p.university.id === selectedUniversity);
+    // فیلتر دانشکده
+    if (selectedFaculty) {
+      filtered = filtered.filter(p => {
+        if (typeof p.faculty === 'number') {
+          return p.faculty === selectedFaculty;
+        }
+        return p.faculty.id === selectedFaculty;
+      });
     }
 
     // فیلتر مقطع
@@ -266,13 +272,18 @@ const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionSte
                   <div className="flex-1 space-y-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-semibold">{choice.program.name_fa}</h4>
+                        <h4 className="font-semibold">{choice.program.name}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {choice.program.university.name_fa} - {getDegreeLabel(choice.program.degree_level)}
+                          {getDegreeLabel(choice.program.degree_level)}
                         </p>
-                        {choice.program.faculty_name_fa && (
+                        {typeof choice.program.faculty === 'object' && (
                           <p className="text-xs text-muted-foreground">
-                            دانشکده {choice.program.faculty_name_fa}
+                            دانشکده {choice.program.faculty.name}
+                          </p>
+                        )}
+                        {typeof choice.program.department === 'object' && (
+                          <p className="text-xs text-muted-foreground">
+                            گروه {choice.program.department.name}
                           </p>
                         )}
                       </div>
@@ -327,21 +338,21 @@ const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionSte
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* فیلتر دانشگاه */}
+              {/* فیلتر دانشکده */}
               <div className="space-y-2">
-                <Label>دانشگاه</Label>
+                <Label>دانشکده</Label>
                 <Select
-                  value={selectedUniversity.toString()}
-                  onValueChange={(value) => setSelectedUniversity(value ? parseInt(value) : '')}
+                  value={selectedFaculty.toString()}
+                  onValueChange={(value) => setSelectedFaculty(value ? parseInt(value) : '')}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="همه دانشگاه‌ها" />
+                    <SelectValue placeholder="همه دانشکده‌ها" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">همه دانشگاه‌ها</SelectItem>
-                    {universities.map(univ => (
-                      <SelectItem key={univ.id} value={univ.id.toString()}>
-                        {univ.name_fa}
+                    <SelectItem value="">همه دانشکده‌ها</SelectItem>
+                    {faculties.map((fac) => (
+                      <SelectItem key={fac.id} value={fac.id.toString()}>
+                        {fac.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -382,16 +393,16 @@ const ProgramSelectionStep = ({ applicationId, onComplete }: ProgramSelectionSte
                 <Card key={program.id} className="p-4 hover:bg-accent/50 transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h4 className="font-semibold">{program.name_fa}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {program.university.name_fa}
-                      </p>
-                      {program.faculty_name_fa && (
-                        <p className="text-xs text-muted-foreground">
-                          دانشکده {program.faculty_name_fa}
-                          {program.department_name_fa && ` - ${program.department_name_fa}`}
+                      <h4 className="font-semibold">{program.name}</h4>
+                      {program.orientation && (
+                        <p className="text-sm text-muted-foreground">
+                          {program.orientation}
                         </p>
                       )}
+                      <p className="text-xs text-muted-foreground">
+                        {typeof program.faculty === 'object' ? program.faculty.name : '—'}
+                        {typeof program.department === 'object' ? ` - ${program.department.name}` : ''}
+                      </p>
                       <div className="flex gap-2 mt-2">
                         <Badge variant="outline">{getDegreeLabel(program.degree_level)}</Badge>
                         {program.capacity && (

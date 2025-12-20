@@ -3,12 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, LogIn, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const adminLoginSchema = z.object({
   nationalId: z
@@ -26,6 +26,7 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { adminLogin } = useAuth();
 
   const {
     register,
@@ -38,7 +39,7 @@ const AdminLogin = () => {
   const onSubmit = async (data: AdminLoginFormData) => {
     setLoading(true);
     try {
-      const response = await authService.adminLogin(data.nationalId, data.password);
+      const response = await adminLogin(data.nationalId, data.password);
       
       // Check if user is applicant (shouldn't happen but handle it)
       if (response.user.role === 'APPLICANT') {
@@ -72,7 +73,7 @@ const AdminLogin = () => {
       } else if (response.user.role === 'FACULTY_ADMIN') {
         navigate('/admin/faculty/applications');
       } else if (response.user.role === 'SYSTEM_ADMIN' || response.user.role === 'SUPERADMIN') {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       } else {
         navigate('/admin');
       }
